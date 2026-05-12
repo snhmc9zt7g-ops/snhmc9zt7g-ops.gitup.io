@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Insel-Escape: Variablen und Terme</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "lucide-react": "https://esm.sh/lucide-react@0.468.0"
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    html, body { min-height: 100%; }
+    body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .tap { -webkit-tap-highlight-color: transparent; }
+    .glass { background: rgba(255,255,255,.82); backdrop-filter: blur(16px); }
+    .grid-bg { background-image: linear-gradient(rgba(14,165,233,.10) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,.10) 1px, transparent 1px); background-size: 22px 22px; }
+    @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+    .floaty { animation: floaty 2.6s ease-in-out infinite; }
+  </style>
+</head>
+<body class="bg-slate-950">
+  <div id="root"></div>
+  <script type="text/babel" data-presets="react" data-type="module">
+    import React, { useEffect, useMemo, useState } from "react";
+    import { createRoot } from "react-dom/client";
+    import { BookOpen, Brain, CheckCircle2, ChevronDown, ChevronUp, ChevronRight, Clock, Compass, Eye, Home, KeyRound, Lightbulb, Lock, Map, PartyPopper, PenLine, Rocket, RotateCcw, Sailboat, Settings, ShieldCheck, Star, Timer, Trophy, Unlock, UserRound, XCircle } from "lucide-react";
+
+    const translations = {
+      de: {
+        appTitle: "Insel-Escape: Variablen und Terme",
+        storyTitle: "Rette dich von der Insel!",
+        storyIntro: "Ein Sturm hat dich auf der Term-Insel gestrandet. Nur wer Variablen, Terme und Rechenregeln sicher nutzt, erreicht rechtzeitig Herrn Borbergs Mathearbeit.",
+        startMission: "Mission starten",
+        chooseMode: "Modus wählen",
+        solo: "Einzelmission",
+        team: "Teammission",
+        yourName: "Name oder Teamname",
+        namePlaceholder: "z. B. Mia, Ben oder Team Algebranauten",
+        randomNick: "Zufallsname",
+        chooseAvatar: "Avatar wählen",
+        chooseColor: "Farbe wählen",
+        language: "Sprache",
+        levelMap: "Inselkarte",
+        progress: "Fortschritt",
+        xp: "XP",
+        level: "Level",
+        locked: "gesperrt",
+        completed: "geschafft",
+        enterLevel: "Level betreten",
+        backMenu: "Zur Karte",
+        next: "Weiter",
+        check: "Prüfen",
+        reset: "Zurücksetzen",
+        solution: "Lösung",
+        feedbackRight: "Richtig! Sehr gut kombiniert.",
+        feedbackWrong1: "Noch nicht ganz. Lies die Aufgabe genau und nutze die Fachbegriffe.",
+        feedbackWrong2: "Tipp: Zerlege den Term oder die Aussage in einzelne Bausteine.",
+        feedbackWrong3: "Konkreter Hinweis: Achte darauf, welche Zahl fest ist und welche Größe veränderlich bleibt.",
+        info: "Info",
+        task: "Aufgabe",
+        worksheetPhase: "Arbeitsblatt-Phase",
+        worksheetText: "Bearbeite kurz die passende Aufgabe auf deinem Arbeitsblatt oder notiere eine Erklärung. Danach geht die Mission weiter.",
+        wait: "Wartezeit",
+        seconds: "Sek.",
+        worksheetContinue: "Weiterarbeiten",
+        teacher: "Lehrer-Menü",
+        teacherHint: "Geheime Steuerzentrale",
+        password: "Passwort",
+        unlockAll: "Alle Level freischalten",
+        revealSolution: "Lösung anzeigen",
+        skipTask: "Aktuelle Aufgabe überspringen",
+        wrongPassword: "Passwort nicht korrekt.",
+        teacherOpen: "Lehrer-Menü geöffnet.",
+        certificate: "Zertifikat",
+        certificateText: "hat die Term-Insel verlassen und ist bereit für die Mathearbeit bei Herrn Borberg.",
+        date: "Datum",
+        finalXp: "Gesammelte XP",
+        restart: "Neu starten",
+        bossTitle: "Finale: Raketenstart zur Mathearbeit",
+        bossIntro: "Löse in 60 Sekunden möglichst viele Mini-Aufgaben. Jede richtige Antwort lädt die Rettungsrakete auf.",
+        bossStart: "Boss-Level starten",
+        timeLeft: "Zeit",
+        correct: "richtig",
+        wrong: "falsch",
+        finished: "Finale beendet",
+        showCertificate: "Zertifikat anzeigen",
+        mapLegend: "Der Avatar bewegt sich mit jedem geschafften Level näher zum Rettungsboot.",
+        profile: "Profil",
+        mode: "Modus",
+        currentMission: "Aktuelle Mission",
+        variable: "Variable",
+        term: "Term",
+        valueOfTerm: "Wert eines Terms",
+        sum: "Summe",
+        product: "Produkt",
+        coefficient: "Koeffizient",
+        simplify: "Zusammenfassen",
+        dragInstruction: "Ziehe die Karte auf die passende Zone oder tippe erst eine Karte und dann eine Zone an.",
+        hotspotInstruction: "Tippe auf die richtige Stelle.",
+        sortInstruction: "Bringe die Schritte mit den Pfeilen in die richtige Reihenfolge.",
+        inputPlaceholder: "Antwort eingeben",
+        gapPlaceholder: "Lücke",
+        rocketCharge: "Raketenladung",
+        islandRoute: "Route",
+        levelNames: ["Strand der Zeichen", "Dschungel der Variablen", "Brücke der Terme", "Höhle der Fachbegriffe", "Werkstatt der Werte", "Lagune der Rechenarten", "Turm der Gleichartigkeit", "Radar der Fehler", "Labor der Term-Modelle", "Boss-Level: Rettungsrakete"],
+        levelSubtitles: ["Was ist eine Variable?", "Variable, Zahl und Term unterscheiden", "Terme aus Situationen aufstellen", "Fachbegriffe sicher zuordnen", "Werte von Termen berechnen", "Rechenarten in Termen erkennen", "Gleichartige Terme zusammenfassen", "Fehler finden und erklären", "Terme modellieren und interpretieren", "Zeitspiel mit gemischten Aufgaben"],
+        infos: [
+          "Eine Variable ist ein Zeichen für eine veränderliche oder unbekannte Zahl. Häufig nutzt man Buchstaben wie x, a oder n. Ein Term ist ein sinnvoller Rechenausdruck aus Zahlen, Variablen und Rechenzeichen.",
+          "Eine feste Zahl bleibt immer gleich, eine Variable kann unterschiedliche Werte annehmen. Terme enthalten keine Gleichheitszeichen. Beispiel: 3 · x + 5 ist ein Term mit der Variable x.",
+          "Terme können Sachsituationen kurz beschreiben. Eine Grundgebühr plus ein Preis pro Person wird zum Beispiel als 4 + 2 · n geschrieben. Dabei steht n für die Anzahl der Personen.",
+          "Fachbegriffe helfen, Terme genau zu beschreiben. Bei 5 · x heißen 5 und x Faktoren; der gesamte Ausdruck ist ein Produkt. Bei x + 7 spricht man von einer Summe.",
+          "Den Wert eines Terms erhält man, indem man für die Variable eine Zahl einsetzt und anschließend korrekt rechnet. Beispiel: Für x = 3 hat 2 · x + 5 den Wert 11. Punktrechnung kommt vor Strichrechnung.",
+          "Ein Term kann verschiedene Rechenarten enthalten. Der letzte Rechenschritt bestimmt oft, ob der gesamte Term als Summe, Differenz, Produkt oder Quotient beschrieben wird. Klammern verändern die Reihenfolge.",
+          "Gleichartige Terme haben dieselbe Variable mit derselben Potenz. Deshalb darf man 3x + 5x zu 8x zusammenfassen. Aber 3x + 5 kann nicht weiter zusammengefasst werden.",
+          "Bei der Fehleranalyse prüfst du jeden Rechenschritt. Typische Fehler sind falsche Vorzeichen, Missachtung von Punkt-vor-Strich oder das Zusammenfassen ungleichartiger Terme. Eine gute Erklärung nennt nicht nur das Ergebnis, sondern auch den Fehlergrund.",
+          "Beim Modellieren entscheidet man, wofür die Variable steht. Eine gute Termbeschreibung nennt zuerst die Bedeutung der Variable und dann, wie der Term entsteht. So wird Mathematik zu einer kurzen Sprache für Situationen.",
+          "Im Finale brauchst du Genauigkeit und Tempo. Lies zuerst, welche Rechenart oder welcher Fachbegriff gesucht ist. Kurze Kontrolle spart Zeit und verhindert Flüchtigkeitsfehler."
+        ],
+        tasks: {
+          l1q1: "Welche Aussage beschreibt eine Variable am besten?",
+          l1q1a: ["Eine feste Zahl, die nie verändert wird", "Ein Zeichen für eine veränderliche oder unbekannte Zahl", "Ein anderes Wort für Gleichheitszeichen", "Immer das Ergebnis einer Rechnung"],
+          l1q2: "Ordne die Begriffe richtig zu.",
+          l1cards: ["x", "7", "4 · a + 2", "="],
+          l1zones: ["Variable", "Zahl", "Term", "kein Term-Baustein"],
+          l2q1: "Welche Ausdrücke sind Terme?",
+          l2q1a: ["3x + 5", "x = 7", "12", "4 · (a + 2)", "n < 9"],
+          l2q2: "Fülle die Lücken: Ein Term enthält Zahlen, Variablen und _____. Er enthält kein _____.",
+          l3q1: "Ein Freizeitpark nimmt 4 € Grundpreis und 2 € pro Fahrt. Welche Termdarstellung passt zur Anzahl f der Fahrten?",
+          l3q1a: ["4 · f + 2", "4 + 2 · f", "2 + f", "4 · 2 + f"],
+          l3q2: "Schreibe einen Term: Eine Pizza kostet 8 €. Jedes Getränk kostet 2,50 €. g steht für die Anzahl der Getränke.",
+          l4q1: "Ordne den Fachbegriff dem Beispiel zu.",
+          l4cards: ["3 + x", "9 - a", "4 · n", "y : 2"],
+          l4zones: ["Summe", "Differenz", "Produkt", "Quotient"],
+          l4q2: "Tippe im Term 7 · x + 3 auf den Koeffizienten von x.",
+          l5q1: "Berechne den Wert des Terms 3 · x + 4 für x = 5.",
+          l5q2: "Sortiere die Schritte zur Berechnung von 2 · (a + 3) für a = 4.",
+          l5steps: ["a durch 4 ersetzen", "Klammer berechnen: 4 + 3", "mit 2 multiplizieren", "Ergebnis 14 notieren"],
+          l6q1: "Welcher Begriff beschreibt den gesamten Term 2 · x + 8 am besten?",
+          l6q1a: ["Produkt", "Summe", "Quotient", "Faktor"],
+          l6q2: "Welche Aussagen sind richtig?",
+          l6q2a: ["In 5 · (x + 2) verändert die Klammer die Rechenreihenfolge.", "3 · x ist eine Summe.", "Bei 12 : n ist n der Divisor.", "In 7 - a liegt eine Differenz vor."],
+          l7q1: "Fasse zusammen: 4x + 3x - 2x",
+          l7q2: "Welche Terme sind gleichartig zu 6a?",
+          l7q2a: ["2a", "a²", "-9a", "6b", "a"],
+          l8q1: "Fehleranalyse: Eine Schülerin rechnet 3x + 5 = 8x. Was ist der Fehler?",
+          l8q1a: ["Sie hat x falsch eingesetzt.", "Sie hat ungleichartige Terme zusammengefasst.", "Sie hat die Multiplikation vergessen.", "Der Term ist grundsätzlich richtig vereinfacht."],
+          l8q2: "Markiere den ersten falschen Schritt: 2 · (x + 4) = 2x + 4 = 6x",
+          l9q1: "Ein Rechteck ist 6 cm lang und x cm breit. Welcher Term beschreibt den Umfang?",
+          l9q1a: ["6x", "6 + x", "2 · (6 + x)", "6 · 2 + x"],
+          l9q2: "Erkläre kurz, wofür n im Term 1,50 · n + 4 stehen kann."
+        },
+        explanations: {
+          l1q1: "Eine Variable steht für eine unbekannte oder veränderliche Zahl, zum Beispiel x oder n.",
+          l1q2: "x ist eine Variable, 7 ist eine Zahl, 4 · a + 2 ist ein Term. Das Gleichheitszeichen gehört zu Gleichungen, nicht zu einem Term.",
+          l2q1: "Terme sind sinnvolle Rechenausdrücke ohne Vergleichs- oder Gleichheitszeichen. Auch eine einzelne Zahl ist ein Term.",
+          l2q2: "Terme bestehen aus Zahlen, Variablen und Rechenzeichen. Ein Gleichheitszeichen macht daraus eine Gleichung.",
+          l3q1: "Die 4 € fallen einmal an. Für jede Fahrt kommen 2 € dazu: 4 + 2 · f.",
+          l3q2: "Der Term lautet 8 + 2,50 · g oder 2,50g + 8. g beschreibt die Anzahl der Getränke.",
+          l4q1: "Plus ergibt eine Summe, Minus eine Differenz, Mal ein Produkt und Geteilt einen Quotienten.",
+          l4q2: "Der Koeffizient ist die Zahl, mit der die Variable multipliziert wird. Hier ist das die 7.",
+          l5q1: "Einsetzen: 3 · 5 + 4 = 15 + 4 = 19.",
+          l5q2: "Erst einsetzen, dann die Klammer berechnen, dann multiplizieren und das Ergebnis notieren.",
+          l6q1: "Der letzte Rechenschritt ist eine Addition. Deshalb ist der gesamte Term eine Summe.",
+          l6q2: "Klammern verändern die Reihenfolge; bei 12 : n ist n der Divisor; 7 - a ist eine Differenz.",
+          l7q1: "4x + 3x - 2x = 5x, weil die Koeffizienten 4 + 3 - 2 zusammengefasst werden.",
+          l7q2: "Gleichartig zu 6a sind alle Terme mit der Variable a in derselben Potenz: 2a, -9a und a.",
+          l8q1: "3x und 5 sind nicht gleichartig. Nur gleichartige Terme dürfen zusammengefasst werden.",
+          l8q2: "Der erste falsche Schritt ist 2x + 4, denn richtig wäre 2x + 8.",
+          l9q1: "Der Umfang eines Rechtecks ist 2 · Länge + 2 · Breite, also 2 · (6 + x).",
+          l9q2: "n kann zum Beispiel die Anzahl gekaufter Gegenstände, Tickets oder Fahrten sein. Wichtig ist: n ist eine Anzahl."
+        },
+        bossQuestions: [
+          { q: "Wert von 2x + 3 für x = 4", a: "11" },
+          { q: "Fasse 5a + 2a zusammen", a: "7a" },
+          { q: "Ist 3x + 4 ein Term?", a: "ja" },
+          { q: "Koeffizient in 9n", a: "9" },
+          { q: "Gesamtausdruck 4 + x ist eine ...", a: "summe" },
+          { q: "Wert von 10 - y für y = 6", a: "4" },
+          { q: "Gleichartig zu 3b: 7b oder 7c?", a: "7b" },
+          { q: "Term für 5 € plus 2 € pro Stück s", a: "5+2s" },
+          { q: "Fehlt bei einem Term ein Gleichheitszeichen?", a: "ja" },
+          { q: "3 · (x + 2) richtig ausmultipliziert", a: "3x+6" }
+        ]
+      },
+      en: {}
+    };
+
+    translations.en = {
+      ...translations.de,
+      appTitle: "Island Escape: Variables and Expressions",
+      storyTitle: "Escape the island!",
+      storyIntro: "A storm has stranded you on Expression Island. Use variables, expressions and rules to reach Mr. Borberg's math test in time.",
+      startMission: "Start mission",
+      chooseMode: "Choose mode",
+      solo: "Solo mission",
+      team: "Team mission",
+      yourName: "Name or team name",
+      namePlaceholder: "e.g. Mia, Ben or Team Algebra",
+      randomNick: "Random name",
+      chooseAvatar: "Choose avatar",
+      chooseColor: "Choose color",
+      language: "Language",
+      levelMap: "Island map",
+      progress: "Progress",
+      level: "Level",
+      locked: "locked",
+      completed: "completed",
+      enterLevel: "Enter level",
+      backMenu: "Back to map",
+      next: "Next",
+      check: "Check",
+      reset: "Reset",
+      solution: "Solution",
+      feedbackRight: "Correct! Great thinking.",
+      feedbackWrong1: "Not quite. Read carefully and use the key terms.",
+      feedbackWrong2: "Hint: Split the expression or statement into smaller parts.",
+      feedbackWrong3: "Concrete hint: Check what is fixed and what can vary.",
+      info: "Info",
+      task: "Task",
+      worksheetPhase: "Worksheet phase",
+      worksheetText: "Work briefly on your worksheet or write an explanation. Then the mission continues.",
+      wait: "Wait",
+      seconds: "sec.",
+      worksheetContinue: "Continue",
+      teacher: "Teacher menu",
+      teacherHint: "Secret control center",
+      password: "Password",
+      unlockAll: "Unlock all levels",
+      revealSolution: "Reveal solution",
+      skipTask: "Skip current task",
+      wrongPassword: "Password incorrect.",
+      teacherOpen: "Teacher menu opened.",
+      certificate: "Certificate",
+      certificateText: "escaped Expression Island and is ready for Mr. Borberg's math test.",
+      date: "Date",
+      finalXp: "Collected XP",
+      restart: "Restart",
+      bossTitle: "Finale: Rocket launch",
+      bossIntro: "Solve as many mini tasks as possible in 60 seconds. Each correct answer charges the rescue rocket.",
+      bossStart: "Start boss level",
+      timeLeft: "Time",
+      correct: "correct",
+      wrong: "wrong",
+      finished: "Finale finished",
+      showCertificate: "Show certificate",
+      mapLegend: "Your avatar moves closer to the rescue boat with each completed level.",
+      profile: "Profile",
+      mode: "Mode",
+      currentMission: "Current mission",
+      variable: "Variable",
+      term: "Expression",
+      valueOfTerm: "Value of an expression",
+      sum: "Sum",
+      product: "Product",
+      coefficient: "Coefficient",
+      simplify: "Simplify",
+      dragInstruction: "Drag the card to the matching zone or tap a card and then a zone.",
+      hotspotInstruction: "Tap the correct spot.",
+      sortInstruction: "Use the arrows to put the steps in the correct order.",
+      inputPlaceholder: "Enter answer",
+      gapPlaceholder: "gap",
+      rocketCharge: "Rocket charge",
+      islandRoute: "Route",
+      levelNames: ["Sign Beach", "Variable Jungle", "Expression Bridge", "Key-Term Cave", "Value Workshop", "Operation Lagoon", "Like-Term Tower", "Error Radar", "Model Lab", "Boss Level: Rescue Rocket"],
+      levelSubtitles: ["What is a variable?", "Distinguish variable, number and expression", "Create expressions from situations", "Match key terms", "Evaluate expressions", "Identify operations", "Combine like terms", "Find and explain errors", "Model and interpret expressions", "Timed mixed challenge"]
+    };
+
+    const avatarIcons = ["🧭", "🤖", "🚀", "🛟", "🦊", "🐢", "⚓", "🧠"];
+    const colors = ["from-sky-400 to-cyan-300", "from-violet-400 to-fuchsia-300", "from-emerald-400 to-lime-300", "from-amber-400 to-orange-300", "from-rose-400 to-pink-300", "from-indigo-400 to-blue-300"];
+    const nicknames = ["Term-Tiger", "Variablen-Voyager", "Algebra-Ahoi", "Klammer-Kapitän", "XP-Xplorer", "Summentaucher", "Koeffi-Kompass", "Rechen-Ranger"];
+    const TEACHER_PASSWORD = "borberg";
+
+    const normalize = (value) => String(value == null ? "" : value).toLowerCase().split(" ").join("").split("*").join("·").split(",").join(".").replace(/[€]/g, "").trim();
+    const getValue = (obj, path) => path.split(".").reduce((acc, part) => (acc == null ? undefined : acc[part]), obj);
+
+    const levelStages = [
+      ["info", "single", "drag", "worksheet"],
+      ["info", "multiple", "gap"],
+      ["info", "single", "input", "worksheet"],
+      ["info", "drag", "hotspot"],
+      ["info", "input", "sort", "worksheet"],
+      ["info", "single", "multiple"],
+      ["info", "input", "multiple", "worksheet"],
+      ["info", "single", "hotspot"],
+      ["info", "single", "input", "worksheet"],
+      ["info", "boss"]
+    ];
+
+    function App() {
+      const [lang, setLang] = useState("de");
+      const [view, setView] = useState("welcome");
+      const [mode, setMode] = useState("solo");
+      const [name, setName] = useState("");
+      const [avatar, setAvatar] = useState(avatarIcons[0]);
+      const [color, setColor] = useState(colors[0]);
+      const [xp, setXp] = useState(0);
+      const [unlocked, setUnlocked] = useState(1);
+      const [completed, setCompleted] = useState([]);
+      const [currentLevel, setCurrentLevel] = useState(0);
+      const [stage, setStage] = useState(0);
+      const [teacherOpen, setTeacherOpen] = useState(false);
+      const [teacherUnlocked, setTeacherUnlocked] = useState(false);
+      const [teacherPw, setTeacherPw] = useState("");
+      const [teacherMsg, setTeacherMsg] = useState("");
+      const [showSolution, setShowSolution] = useState(false);
+
+      const t = (key) => {
+        const translated = getValue(translations[lang], key);
+        if (translated !== undefined && translated !== null) return translated;
+        const fallback = getValue(translations.de, key);
+        return fallback !== undefined && fallback !== null ? fallback : key;
+      };
+      const displayName = name.trim() || "Term-Tiger";
+      const progressPercent = Math.round((completed.length / 10) * 100);
+
+      function enterLevel(index) {
+        if (index + 1 > unlocked) return;
+        setCurrentLevel(index);
+        setStage(0);
+        setShowSolution(false);
+        setView("level");
+      }
+
+      function completeLevel(index, bonus = 60) {
+        setCompleted((prev) => prev.includes(index) ? prev : [...prev, index]);
+        setUnlocked((prev) => Math.max(prev, Math.min(10, index + 2)));
+        setXp((prev) => prev + bonus);
+        setShowSolution(false);
+        setView(index === 9 ? "certificate" : "menu");
+      }
+
+      function openTeacherPanel() {
+        if (teacherPw === TEACHER_PASSWORD) {
+          setTeacherUnlocked(true);
+          setTeacherMsg(t("teacherOpen"));
+        } else {
+          setTeacherMsg(t("wrongPassword"));
+        }
+      }
+
+      function resetApp() {
+        setView("welcome");
+        setMode("solo");
+        setName("");
+        setAvatar(avatarIcons[0]);
+        setColor(colors[0]);
+        setXp(0);
+        setUnlocked(1);
+        setCompleted([]);
+        setCurrentLevel(0);
+        setStage(0);
+        setShowSolution(false);
+      }
+
+      return (
+        <div className="min-h-screen overflow-hidden bg-slate-950 text-slate-900 grid-bg">
+          <div className="fixed inset-0 -z-10">
+            <div className="absolute -top-20 -left-20 h-72 w-72 rounded-full bg-cyan-500/30 blur-3xl"></div>
+            <div className="absolute top-1/3 -right-16 h-80 w-80 rounded-full bg-violet-500/25 blur-3xl"></div>
+            <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl"></div>
+          </div>
+          <Header t={t} lang={lang} setLang={setLang} xp={xp} progressPercent={progressPercent} avatar={avatar} color={color} name={displayName} setTeacherOpen={setTeacherOpen} />
+          <main className="mx-auto w-full max-w-6xl px-3 pb-8 pt-3 sm:px-5">
+            {view === "welcome" && <Welcome t={t} mode={mode} setMode={setMode} name={name} setName={setName} avatar={avatar} setAvatar={setAvatar} color={color} setColor={setColor} startMission={() => setView("menu")} />}
+            {view === "menu" && <MenuView t={t} displayName={displayName} avatar={avatar} color={color} mode={mode} unlocked={unlocked} completed={completed} enterLevel={enterLevel} progressPercent={progressPercent} />}
+            {view === "level" && <LevelView t={t} levelIndex={currentLevel} stage={stage} setStage={setStage} completeLevel={completeLevel} setView={setView} addXp={(n) => setXp((p) => p + n)} showSolution={showSolution} setShowSolution={setShowSolution} />}
+            {view === "certificate" && <Certificate t={t} name={displayName} avatar={avatar} color={color} xp={xp} resetApp={resetApp} />}
+          </main>
+          {teacherOpen && <TeacherModal t={t} setTeacherOpen={setTeacherOpen} teacherPw={teacherPw} setTeacherPw={setTeacherPw} teacherUnlocked={teacherUnlocked} openTeacherPanel={openTeacherPanel} teacherMsg={teacherMsg} unlockAll={() => setUnlocked(10)} revealSolution={() => setShowSolution(true)} skipTask={() => window.dispatchEvent(new CustomEvent("teacher-skip-task"))} />}
+        </div>
+      );
+    }
+
+    function Header({ t, lang, setLang, xp, progressPercent, avatar, color, name, setTeacherOpen }) {
+      return (
+        <header className="sticky top-0 z-30 border-b border-white/20 bg-slate-950/80 px-3 py-2 text-white backdrop-blur-xl sm:px-5">
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2">
+              <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${color} text-xl shadow-lg shadow-cyan-950/40`}>{avatar}</div>
+              <div className="min-w-0">
+                <h1 className="truncate text-sm font-black tracking-tight sm:text-lg">{t("appTitle")}</h1>
+                <p className="truncate text-[11px] text-cyan-100/80 sm:text-xs">{name}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="hidden rounded-2xl bg-white/10 px-3 py-2 sm:block">
+                <div className="flex items-center gap-2 text-xs font-bold"><Star className="h-4 w-4 text-amber-300" />{xp} {t("xp")}</div>
+                <div className="mt-1 h-1.5 w-28 overflow-hidden rounded-full bg-white/20"><div className="h-full rounded-full bg-cyan-300" style={{ width: `${progressPercent}%` }}></div></div>
+              </div>
+              <select value={lang} onChange={(e) => setLang(e.target.value)} className="tap rounded-xl border border-white/20 bg-white/10 px-2 py-2 text-xs font-semibold text-white outline-none" aria-label={t("language")}>
+                <option className="text-slate-900" value="de">DE</option>
+                <option className="text-slate-900" value="en">EN</option>
+              </select>
+              <button onClick={() => setTeacherOpen(true)} className="tap rounded-xl border border-white/20 bg-white/10 p-2 transition hover:bg-white/20" aria-label={t("teacher")}><Settings className="h-5 w-5" /></button>
+            </div>
+          </div>
+        </header>
+      );
+    }
+
+    function Welcome({ t, mode, setMode, name, setName, avatar, setAvatar, color, setColor, startMission }) {
+      return (
+        <section className="grid gap-4 lg:grid-cols-[1.1fr_.9fr]">
+          <div className="glass rounded-[2rem] border border-white/60 p-5 shadow-2xl sm:p-8">
+            <div className="mb-5 flex items-center gap-3">
+              <div className="grid h-14 w-14 place-items-center rounded-3xl bg-slate-950 text-3xl shadow-xl"><Sailboat className="h-8 w-8 text-cyan-300" /></div>
+              <div>
+                <p className="text-xs font-black uppercase tracking-[.25em] text-cyan-700">{t("currentMission")}</p>
+                <h2 className="text-3xl font-black tracking-tight text-slate-950 sm:text-5xl">{t("storyTitle")}</h2>
+              </div>
+            </div>
+            <p className="max-w-2xl text-base leading-relaxed text-slate-700 sm:text-lg">{t("storyIntro")}</p>
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[t("variable"), t("term"), t("valueOfTerm"), t("simplify")].map((item) => <div key={item} className="rounded-2xl border border-cyan-100 bg-cyan-50/80 p-3 text-center text-sm font-extrabold text-cyan-950 shadow-sm">{item}</div>)}
+            </div>
+            <button onClick={startMission} className="tap mt-7 flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-4 text-base font-black text-white shadow-xl shadow-slate-950/20 transition hover:-translate-y-0.5 hover:bg-slate-800 sm:w-auto"><Rocket className="h-5 w-5 text-cyan-300" />{t("startMission")}</button>
+          </div>
+          <div className="glass rounded-[2rem] border border-white/60 p-5 shadow-2xl sm:p-7">
+            <h3 className="mb-4 flex items-center gap-2 text-xl font-black"><UserRound className="h-5 w-5 text-cyan-700" />{t("profile")}</h3>
+            <label className="text-sm font-black text-slate-700">{t("chooseMode")}</label>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {[{ id: "solo", label: t("solo"), icon: UserRound }, { id: "team", label: t("team"), icon: ShieldCheck }].map((m) => {
+                const Icon = m.icon;
+                return <button key={m.id} onClick={() => setMode(m.id)} className={`tap rounded-2xl border p-3 text-left text-sm font-black transition ${mode === m.id ? "border-cyan-400 bg-cyan-100 text-cyan-950" : "border-slate-200 bg-white/70 text-slate-700"}`}><Icon className="mb-2 h-5 w-5" />{m.label}</button>;
+              })}
+            </div>
+            <label className="mt-4 block text-sm font-black text-slate-700">{t("yourName")}</label>
+            <div className="mt-2 flex gap-2">
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("namePlaceholder")} className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none focus:border-cyan-400" />
+              <button onClick={() => setName(nicknames[Math.floor(Math.random() * nicknames.length)])} className="tap rounded-2xl bg-cyan-600 px-3 text-xs font-black text-white shadow-lg shadow-cyan-900/20">{t("randomNick")}</button>
+            </div>
+            <label className="mt-4 block text-sm font-black text-slate-700">{t("chooseAvatar")}</label>
+            <div className="mt-2 grid grid-cols-4 gap-2">{avatarIcons.map((a) => <button key={a} onClick={() => setAvatar(a)} className={`tap rounded-2xl border p-3 text-2xl transition ${avatar === a ? "border-slate-950 bg-slate-950" : "border-slate-200 bg-white/70"}`}>{a}</button>)}</div>
+            <label className="mt-4 block text-sm font-black text-slate-700">{t("chooseColor")}</label>
+            <div className="mt-2 grid grid-cols-6 gap-2">{colors.map((c) => <button key={c} onClick={() => setColor(c)} className={`tap h-10 rounded-2xl bg-gradient-to-br ${c} ring-offset-2 transition ${color === c ? "ring-4 ring-slate-950" : "ring-1 ring-white"}`} aria-label={c}></button>)}</div>
+          </div>
+        </section>
+      );
+    }
+
+    function MenuView({ t, displayName, avatar, color, mode, unlocked, completed, enterLevel, progressPercent }) {
+      return (
+        <section className="grid gap-4 lg:grid-cols-[.8fr_1.2fr]">
+          <div className="glass rounded-[2rem] border border-white/60 p-5 shadow-2xl sm:p-7">
+            <div className="flex items-center gap-3">
+              <div className={`floaty grid h-20 w-20 place-items-center rounded-[2rem] bg-gradient-to-br ${color} text-4xl shadow-xl`}>{avatar}</div>
+              <div>
+                <p className="text-xs font-black uppercase tracking-[.25em] text-cyan-700">{t("profile")}</p>
+                <h2 className="text-2xl font-black text-slate-950">{displayName}</h2>
+                <p className="text-sm font-bold text-slate-600">{t("mode")}: {mode === "solo" ? t("solo") : t("team")}</p>
+              </div>
+            </div>
+            <div className="mt-5 rounded-3xl bg-slate-950 p-4 text-white">
+              <div className="mb-2 flex justify-between text-sm font-black"><span>{t("progress")}</span><span>{progressPercent}%</span></div>
+              <div className="h-4 overflow-hidden rounded-full bg-white/15"><div className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-emerald-300" style={{ width: `${progressPercent}%` }}></div></div>
+              <p className="mt-3 text-xs text-cyan-100/80">{t("mapLegend")}</p>
+            </div>
+            <MapPath t={t} completed={completed.length} avatar={avatar} color={color} />
+          </div>
+          <div className="glass rounded-[2rem] border border-white/60 p-5 shadow-2xl sm:p-7">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-2xl font-black"><Map className="h-6 w-6 text-cyan-700" />{t("levelMap")}</h2>
+              <div className="rounded-2xl bg-white px-3 py-2 text-xs font-black text-slate-700 shadow-sm">{completed.length}/10</div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {Array.from({ length: 10 }).map((_, i) => {
+                const isUnlocked = i + 1 <= unlocked;
+                const isDone = completed.includes(i);
+                return (
+                  <button key={i} onClick={() => enterLevel(i)} disabled={!isUnlocked} className={`tap group rounded-3xl border p-4 text-left shadow-sm transition ${isDone ? "border-emerald-300 bg-emerald-50" : isUnlocked ? "border-cyan-200 bg-white hover:-translate-y-0.5 hover:border-cyan-400 hover:shadow-xl" : "border-slate-200 bg-slate-100 opacity-70"}`}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-[.2em] text-slate-500">{t("level")} {i + 1}</p>
+                        <h3 className="mt-1 text-base font-black text-slate-950">{t(`levelNames.${i}`)}</h3>
+                        <p className="mt-1 text-xs font-semibold text-slate-600">{t(`levelSubtitles.${i}`)}</p>
+                      </div>
+                      <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${isDone ? "bg-emerald-500 text-white" : isUnlocked ? "bg-cyan-100 text-cyan-800" : "bg-slate-300 text-slate-600"}`}>{isDone ? <CheckCircle2 /> : isUnlocked ? <Unlock /> : <Lock />}</div>
+                    </div>
+                    <div className="mt-3 text-xs font-black text-slate-500">{isDone ? t("completed") : isUnlocked ? t("enterLevel") : t("locked")}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function MapPath({ t, completed, avatar, color }) {
+      const left = `${Math.min(92, 8 + completed * 8.4)}%`;
+      return (
+        <div className="mt-5 rounded-[2rem] border border-cyan-100 bg-cyan-50/70 p-4">
+          <div className="mb-3 flex items-center gap-2 text-sm font-black text-cyan-950"><Compass className="h-4 w-4" />{t("islandRoute")}</div>
+          <div className="relative h-32 overflow-hidden rounded-3xl bg-gradient-to-br from-cyan-200 via-emerald-100 to-amber-100">
+            <svg viewBox="0 0 600 160" className="absolute inset-0 h-full w-full">
+              <path d="M40 110 C120 30, 190 150, 275 70 S450 30, 560 95" fill="none" stroke="rgba(15,23,42,.35)" strokeWidth="8" strokeLinecap="round" strokeDasharray="10 14" />
+              <circle cx="50" cy="112" r="16" fill="rgba(14,165,233,.35)" />
+              <text x="525" y="52" fontSize="30">🚤</text>
+              <text x="100" y="50" fontSize="26">🌴</text>
+              <text x="300" y="115" fontSize="24">⛰️</text>
+            </svg>
+            <div className={`absolute top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-2xl bg-gradient-to-br ${color} text-2xl shadow-xl transition-all duration-700`} style={{ left }}>{avatar}</div>
+          </div>
+        </div>
+      );
+    }
+
+    function LevelView({ t, levelIndex, stage, setStage, completeLevel, setView, addXp, showSolution, setShowSolution }) {
+      const stages = levelStages[levelIndex] || levelStages[0];
+      const current = stages[stage] || stages[0];
+      const isLast = stage >= stages.length - 1;
+
+      function goNext() {
+        setShowSolution(false);
+        if (isLast) completeLevel(levelIndex, levelIndex === 9 ? 120 : 60);
+        else setStage((s) => s + 1);
+      }
+
+      useEffect(() => {
+        const handler = () => goNext();
+        window.addEventListener("teacher-skip-task", handler);
+        return () => window.removeEventListener("teacher-skip-task", handler);
+      }, [stage, levelIndex]);
+
+      return (
+        <section className="glass rounded-[2rem] border border-white/60 p-4 shadow-2xl sm:p-7">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[.25em] text-cyan-700">{t("level")} {levelIndex + 1}</p>
+              <h2 className="text-2xl font-black text-slate-950 sm:text-3xl">{t(`levelNames.${levelIndex}`)}</h2>
+              <p className="text-sm font-semibold text-slate-600">{t(`levelSubtitles.${levelIndex}`)}</p>
+            </div>
+            <button onClick={() => setView("menu")} className="tap flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 shadow-sm"><Home className="h-4 w-4" />{t("backMenu")}</button>
+          </div>
+          <div className="mb-5 h-3 overflow-hidden rounded-full bg-slate-200"><div className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-400 transition-all" style={{ width: `${((stage + 1) / stages.length) * 100}%` }}></div></div>
+          {current === "info" && <InfoCard t={t} levelIndex={levelIndex} onNext={goNext} />}
+          {current !== "info" && current !== "worksheet" && current !== "boss" && <TaskRenderer t={t} levelIndex={levelIndex} type={current} onSolved={() => { addXp(20); goNext(); }} showSolution={showSolution} />}
+          {current === "worksheet" && <WorksheetModal t={t} onDone={goNext} />}
+          {current === "boss" && <BossLevel t={t} onDone={(score) => completeLevel(levelIndex, 80 + score * 10)} />}
+        </section>
+      );
+    }
+
+    function InfoCard({ t, levelIndex, onNext }) {
+      return (
+        <div className="rounded-[2rem] bg-slate-950 p-5 text-white sm:p-8">
+          <div className="mb-4 flex items-center gap-3"><div className="grid h-12 w-12 place-items-center rounded-2xl bg-cyan-400/20"><BookOpen className="h-7 w-7 text-cyan-300" /></div><div><p className="text-xs font-black uppercase tracking-[.25em] text-cyan-300">{t("info")}</p><h3 className="text-2xl font-black">{t(`levelNames.${levelIndex}`)}</h3></div></div>
+          <p className="max-w-3xl text-lg leading-relaxed text-slate-100">{t(`infos.${levelIndex}`)}</p>
+          <div className="mt-6 flex flex-wrap gap-2">{["variable", "term", "sum", "product", "coefficient"].map((k) => <span key={k} className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-black text-cyan-100">{t(k)}</span>)}</div>
+          <button onClick={onNext} className="tap mt-7 flex items-center gap-2 rounded-2xl bg-cyan-300 px-5 py-3 font-black text-slate-950 shadow-lg shadow-cyan-950/30">{t("next")}<ChevronRight className="h-5 w-5" /></button>
+        </div>
+      );
+    }
+
+    function Feedback({ t, status, attempts, explanation }) {
+      if (!status) return null;
+      const wrongText = attempts <= 1 ? t("feedbackWrong1") : attempts === 2 ? t("feedbackWrong2") : t("feedbackWrong3");
+      return (
+        <div className={`mt-4 rounded-3xl border p-4 ${status === "right" ? "border-emerald-200 bg-emerald-50 text-emerald-950" : "border-amber-200 bg-amber-50 text-amber-950"}`}>
+          <div className="flex items-start gap-2">
+            {status === "right" ? <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" /> : <Lightbulb className="mt-0.5 h-5 w-5 shrink-0" />}
+            <div><p className="font-black">{status === "right" ? t("feedbackRight") : wrongText}</p>{(status === "right" || attempts >= 3) && <p className="mt-1 text-sm font-semibold opacity-85">{explanation}</p>}</div>
+          </div>
+        </div>
+      );
+    }
+
+    function TaskShell({ t, children, question, solution, showSolution }) {
+      return (
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+          <div className="mb-4 flex items-start gap-3"><div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-cyan-100 text-cyan-800"><Brain className="h-6 w-6" /></div><div><p className="text-xs font-black uppercase tracking-[.22em] text-cyan-700">{t("task")}</p><h3 className="text-xl font-black text-slate-950 sm:text-2xl">{question}</h3></div></div>
+          {children}
+          {showSolution && <div className="mt-4 rounded-3xl border border-violet-200 bg-violet-50 p-4 text-sm font-bold text-violet-950"><span className="font-black">{t("solution")}:</span> {solution}</div>}
+        </div>
+      );
+    }
+
+    function TaskRenderer({ t, levelIndex, type, onSolved, showSolution }) {
+      const data = t("tasks");
+      const exp = t("explanations");
+      if (levelIndex === 0 && type === "single") return <SingleChoice t={t} question={data.l1q1} answers={data.l1q1a} correct={1} explanation={exp.l1q1} onSolved={onSolved} showSolution={showSolution} />;
+      if (levelIndex === 0 && type === "drag") return <DragMatch t={t} question={data.l1q2} cards={data.l1cards} zones={data.l1zones} correct={[0,1,2,3]} explanation={exp.l1q2} onSolved={onSolved} showSolution={showSolution} />;
+      if (levelIndex === 1 && type === "multiple") return <MultipleChoice t={t} question={data.l2q1} answers={data.l2q1a} correct={[0,2,3]} explanation={exp.l2q1} onSolved={onSolved} showSolution={showSolution} />;
+      if (levelIndex === 1 && type === "gap") return <GapTask t={t} question={data.l2q2} correct={["rechenzeichen", "gleichheitszeichen"]} explanation={exp.l2q2} onSolved={onSolved} showSolution={showSolution} />;
+      if (levelIndex === 2 && type === "single") return <SingleChoice t={t} question={data.l3q1} answers={data.l3q1a} correct={1} explanation={exp.l3q1} onSolved={onSolved} showSolution={showSolution} />;
+      if (levelIndex === 2 && type === "input") return <InputTask t={t} question={data.l3q2} valid={(v) => ["8+2.50·g", "8+2.5·g", "8+2.50g", "8+2.5g", "2.50·g+8", "2.5·g+8", "2.50g+8", "2.5g+8"].includes(normalize(v))} explanation={exp.l3q2} solution="8 + 2,50 · g" onSolved={onSolved} showSolution={showSolution} />;
+      if (levelIndex === 3 && type === "drag") return <DragMatch t={t} question={data.l4q1} cards={data.l4cards} zones={data.l4zones} correct={[0,1,2,3]} explanation={exp.l4q1} onSolved={onSolved} showSolution={showSolution} />;
+      if (levelIndex === 3 && type === "hotspot") return <HotspotTask t={t} question={data.l4q2} term={["7", "·", "x", "+", "3"]} correct={0} explanation={exp.l4q2} onSolved={onSolved} showSolution={showSolution} />;
+      if (levelIndex === 4 && type === "input") return <InputTask t={t} question={data.l5q1} valid={(v) => normalize(v) === "19"} explanation={exp.l5q1} solution="19" onSolved={onSolved} showSolution={showSolution} />;
+      if (levelIndex === 4 && type === "sort") return <SortTask t={t} question={data.l5q2} items={data.l5steps} correct={[0,1,2,3]} explanation={exp.l5q2} onSolved={onSolved} showSolution={showSolution} />;
+      if (levelIndex === 5 && type === "single") return <SingleChoice t={t} question={data.l6q1} answers={data.l6q1a} correct={1} explanation={exp.l6q1} onSolved={onSolved} showSolution={showSolution} />;
+      if (levelIndex === 5 && type === "multiple") return <MultipleChoice t={t} question={data.l6q2} answers={data.l6q2a} correct={[0,2,3]} explanation={exp.l6q2} onSolved={onSolved} showSolution={showSolution} />;
+      if (levelIndex === 6 && type === "input") return <InputTask t={t} question={data.l7q1} valid={(v) => ["5x", "5·x"].includes(normalize(v))} explanation={exp.l7q1} solution="5x" onSolved={onSolved} showSolution={showSolution} />;
+      if (levelIndex === 6 && type === "multiple") return <MultipleChoice t={t} question={data.l7q2} answers={data.l7q2a} correct={[0,2,4]} explanation={exp.l7q2} onSolved={onSolved} showSolution={showSolution} />;
+      if (levelIndex === 7 && type === "single") return <SingleChoice t={t} question={data.l8q1} answers={data.l8q1a} correct={1} explanation={exp.l8q1} onSolved={onSolved} showSolution={showSolution} />;
+      if (levelIndex === 7 && type === "hotspot") return <HotspotTask t={t} question={data.l8q2} term={["2 · (x + 4)", "=", "2x + 4", "=", "6x"]} correct={2} explanation={exp.l8q2} onSolved={onSolved} showSolution={showSolution} />;
+      if (levelIndex === 8 && type === "single") return <SingleChoice t={t} question={data.l9q1} answers={data.l9q1a} correct={2} explanation={exp.l9q1} onSolved={onSolved} showSolution={showSolution} />;
+      if (levelIndex === 8 && type === "input") return <InputTask t={t} question={data.l9q2} valid={(v) => /anzahl|tickets|stücke|fahrten|personen|gegenstände|karten/i.test(v)} explanation={exp.l9q2} solution="n steht für eine Anzahl, z. B. Anzahl der Tickets." onSolved={onSolved} showSolution={showSolution} long />;
+      return null;
+    }
+
+    function SingleChoice({ t, question, answers, correct, explanation, onSolved, showSolution }) {
+      const [selected, setSelected] = useState(null);
+      const [status, setStatus] = useState(null);
+      const [attempts, setAttempts] = useState(0);
+      function submit() {
+        const nextAttempts = attempts + 1;
+        setAttempts(nextAttempts);
+        if (selected === correct) { setStatus("right"); setTimeout(onSolved, 850); } else setStatus("wrong");
+      }
+      return <TaskShell t={t} question={question} solution={answers[correct]} showSolution={showSolution}><div className="grid gap-2 sm:grid-cols-2">{answers.map((a,i) => <button key={`${a}-${i}`} onClick={() => setSelected(i)} className={`tap rounded-2xl border p-4 text-left text-sm font-black transition ${selected === i ? "border-cyan-500 bg-cyan-50" : "border-slate-200 bg-slate-50 hover:bg-white"}`}>{a}</button>)}</div><button onClick={submit} disabled={selected === null} className="tap mt-4 rounded-2xl bg-slate-950 px-5 py-3 font-black text-white disabled:opacity-40">{t("check")}</button><Feedback t={t} status={status} attempts={attempts} explanation={explanation} /></TaskShell>;
+    }
+
+    function MultipleChoice({ t, question, answers, correct, explanation, onSolved, showSolution }) {
+      const [selected, setSelected] = useState([]);
+      const [status, setStatus] = useState(null);
+      const [attempts, setAttempts] = useState(0);
+      const toggle = (i) => setSelected((prev) => prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]);
+      function submit() {
+        const nextAttempts = attempts + 1;
+        setAttempts(nextAttempts);
+        const ok = selected.length === correct.length && correct.every((i) => selected.includes(i));
+        if (ok) { setStatus("right"); setTimeout(onSolved, 900); } else setStatus("wrong");
+      }
+      return <TaskShell t={t} question={question} solution={correct.map((i) => answers[i]).join(" | ")} showSolution={showSolution}><div className="grid gap-2">{answers.map((a,i) => <button key={`${a}-${i}`} onClick={() => toggle(i)} className={`tap flex items-center gap-3 rounded-2xl border p-4 text-left text-sm font-black transition ${selected.includes(i) ? "border-emerald-500 bg-emerald-50" : "border-slate-200 bg-slate-50 hover:bg-white"}`}><span className={`grid h-6 w-6 shrink-0 place-items-center rounded-lg border ${selected.includes(i) ? "border-emerald-600 bg-emerald-600 text-white" : "border-slate-300"}`}>{selected.includes(i) ? "✓" : ""}</span>{a}</button>)}</div><button onClick={submit} className="tap mt-4 rounded-2xl bg-slate-950 px-5 py-3 font-black text-white">{t("check")}</button><Feedback t={t} status={status} attempts={attempts} explanation={explanation} /></TaskShell>;
+    }
+
+    function InputTask({ t, question, valid, explanation, solution, onSolved, showSolution, long }) {
+      const [value, setValue] = useState("");
+      const [status, setStatus] = useState(null);
+      const [attempts, setAttempts] = useState(0);
+      function submit() {
+        const nextAttempts = attempts + 1;
+        setAttempts(nextAttempts);
+        if (valid(value)) { setStatus("right"); setTimeout(onSolved, 900); } else setStatus("wrong");
+      }
+      return <TaskShell t={t} question={question} solution={solution} showSolution={showSolution}>{long ? <textarea value={value} onChange={(e) => setValue(e.target.value)} placeholder={t("inputPlaceholder")} className="min-h-[130px] w-full rounded-3xl border border-slate-200 bg-slate-50 p-4 text-base font-semibold outline-none focus:border-cyan-400" /> : <input value={value} onChange={(e) => setValue(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") submit(); }} placeholder={t("inputPlaceholder")} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-lg font-black outline-none focus:border-cyan-400" />}<button onClick={submit} className="tap mt-4 rounded-2xl bg-slate-950 px-5 py-3 font-black text-white">{t("check")}</button><Feedback t={t} status={status} attempts={attempts} explanation={explanation} /></TaskShell>;
+    }
+
+    function GapTask({ t, question, correct, explanation, onSolved, showSolution }) {
+      const [values, setValues] = useState(["", ""]);
+      const [status, setStatus] = useState(null);
+      const [attempts, setAttempts] = useState(0);
+      function submit() {
+        const nextAttempts = attempts + 1;
+        setAttempts(nextAttempts);
+        const ok = values.every((v,i) => normalize(v) === correct[i]);
+        if (ok) { setStatus("right"); setTimeout(onSolved, 900); } else setStatus("wrong");
+      }
+      return <TaskShell t={t} question={question} solution="Rechenzeichen; Gleichheitszeichen" showSolution={showSolution}><div className="grid gap-3 sm:grid-cols-2">{values.map((v,i) => <input key={i} value={v} onChange={(e) => setValues(values.map((x,idx) => idx === i ? e.target.value : x))} placeholder={`${t("gapPlaceholder")} ${i + 1}`} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-lg font-black outline-none focus:border-cyan-400" />)}</div><button onClick={submit} className="tap mt-4 rounded-2xl bg-slate-950 px-5 py-3 font-black text-white">{t("check")}</button><Feedback t={t} status={status} attempts={attempts} explanation={explanation} /></TaskShell>;
+    }
+
+    function DragMatch({ t, question, cards, zones, correct, explanation, onSolved, showSolution }) {
+      const [placements, setPlacements] = useState({});
+      const [dragging, setDragging] = useState(null);
+      const [status, setStatus] = useState(null);
+      const [attempts, setAttempts] = useState(0);
+      const place = (cardIndex, zoneIndex) => setPlacements((p) => ({ ...p, [cardIndex]: zoneIndex }));
+      function submit() {
+        const nextAttempts = attempts + 1;
+        setAttempts(nextAttempts);
+        const ok = cards.every((_, i) => placements[i] === correct[i]);
+        if (ok) { setStatus("right"); setTimeout(onSolved, 1000); } else setStatus("wrong");
+      }
+      return <TaskShell t={t} question={question} solution={cards.map((c,i) => `${c} → ${zones[correct[i]]}`).join(" | ")} showSolution={showSolution}><p className="mb-3 text-sm font-bold text-slate-600">{t("dragInstruction")}</p><div className="mb-4 flex flex-wrap gap-2">{cards.map((c,i) => <button key={`${c}-${i}`} draggable onDragStart={() => setDragging(i)} onClick={() => setDragging(i)} className={`tap rounded-2xl border bg-white px-4 py-3 text-lg font-black shadow-sm ${dragging === i ? "border-cyan-500 ring-4 ring-cyan-100" : "border-slate-200"}`}>{c}</button>)}</div><div className="grid gap-3 sm:grid-cols-2">{zones.map((z,zi) => <div key={z} onDragOver={(e) => e.preventDefault()} onDrop={() => dragging !== null && place(dragging, zi)} onClick={() => dragging !== null && place(dragging, zi)} className="min-h-[105px] rounded-3xl border-2 border-dashed border-cyan-200 bg-cyan-50/70 p-3"><p className="mb-2 text-sm font-black text-cyan-950">{z}</p><div className="flex flex-wrap gap-2">{cards.map((c,ci) => placements[ci] === zi ? <span key={`${c}-placed`} className="rounded-2xl bg-slate-950 px-3 py-2 text-base font-black text-white">{c}</span> : null)}</div></div>)}</div><div className="mt-4 flex gap-2"><button onClick={submit} className="tap rounded-2xl bg-slate-950 px-5 py-3 font-black text-white">{t("check")}</button><button onClick={() => { setPlacements({}); setDragging(null); setStatus(null); }} className="tap rounded-2xl border border-slate-200 bg-white px-5 py-3 font-black text-slate-700">{t("reset")}</button></div><Feedback t={t} status={status} attempts={attempts} explanation={explanation} /></TaskShell>;
+    }
+
+    function HotspotTask({ t, question, term, correct, explanation, onSolved, showSolution }) {
+      const [selected, setSelected] = useState(null);
+      const [status, setStatus] = useState(null);
+      const [attempts, setAttempts] = useState(0);
+      function submit(i) {
+        setSelected(i);
+        const nextAttempts = attempts + 1;
+        setAttempts(nextAttempts);
+        if (i === correct) { setStatus("right"); setTimeout(onSolved, 850); } else setStatus("wrong");
+      }
+      return <TaskShell t={t} question={question} solution={term[correct]} showSolution={showSolution}><p className="mb-3 text-sm font-bold text-slate-600">{t("hotspotInstruction")}</p><div className="flex flex-wrap items-center gap-2 rounded-3xl bg-slate-50 p-4">{term.map((part,i) => <button key={`${part}-${i}`} onClick={() => submit(i)} className={`tap rounded-2xl border px-4 py-4 text-xl font-black transition sm:text-3xl ${selected === i ? "border-cyan-500 bg-cyan-100" : "border-slate-200 bg-white hover:bg-cyan-50"}`}>{part}</button>)}</div><Feedback t={t} status={status} attempts={attempts} explanation={explanation} /></TaskShell>;
+    }
+
+    function SortTask({ t, question, items, correct, explanation, onSolved, showSolution }) {
+      const [order, setOrder] = useState([2,0,3,1]);
+      const [status, setStatus] = useState(null);
+      const [attempts, setAttempts] = useState(0);
+      function move(pos, dir) {
+        const next = [...order];
+        const newPos = pos + dir;
+        if (newPos < 0 || newPos >= next.length) return;
+        [next[pos], next[newPos]] = [next[newPos], next[pos]];
+        setOrder(next);
+      }
+      function submit() {
+        const nextAttempts = attempts + 1;
+        setAttempts(nextAttempts);
+        const ok = order.every((x,i) => x === correct[i]);
+        if (ok) { setStatus("right"); setTimeout(onSolved, 1000); } else setStatus("wrong");
+      }
+      return <TaskShell t={t} question={question} solution={correct.map((i) => items[i]).join(" → ")} showSolution={showSolution}><p className="mb-3 text-sm font-bold text-slate-600">{t("sortInstruction")}</p><div className="space-y-2">{order.map((itemIndex,pos) => <div key={itemIndex} className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-3"><div className="grid h-9 w-9 place-items-center rounded-xl bg-slate-950 text-sm font-black text-white">{pos + 1}</div><p className="flex-1 text-sm font-black text-slate-800">{items[itemIndex]}</p><button onClick={() => move(pos, -1)} className="tap rounded-xl bg-white p-2 shadow-sm"><ChevronUp className="h-4 w-4" /></button><button onClick={() => move(pos, 1)} className="tap rounded-xl bg-white p-2 shadow-sm"><ChevronDown className="h-4 w-4" /></button></div>)}</div><button onClick={submit} className="tap mt-4 rounded-2xl bg-slate-950 px-5 py-3 font-black text-white">{t("check")}</button><Feedback t={t} status={status} attempts={attempts} explanation={explanation} /></TaskShell>;
+    }
+
+    function WorksheetModal({ t, onDone }) {
+      const [seconds, setSeconds] = useState(15);
+      useEffect(() => {
+        if (seconds <= 0) return undefined;
+        const id = window.setTimeout(() => setSeconds((s) => s - 1), 1000);
+        return () => window.clearTimeout(id);
+      }, [seconds]);
+      return (
+        <div className="rounded-[2rem] border border-amber-200 bg-amber-50 p-5 sm:p-8">
+          <div className="mb-4 flex items-center gap-3"><div className="grid h-14 w-14 place-items-center rounded-2xl bg-amber-300 text-amber-950"><PenLine className="h-8 w-8" /></div><div><p className="text-xs font-black uppercase tracking-[.25em] text-amber-800">{t("worksheetPhase")}</p><h3 className="text-2xl font-black text-slate-950">{t("worksheetPhase")}</h3></div></div>
+          <p className="max-w-2xl text-base font-semibold leading-relaxed text-slate-700">{t("worksheetText")}</p>
+          <div className="mt-5 flex flex-wrap items-center gap-3"><div className="rounded-2xl bg-white px-4 py-3 text-sm font-black text-slate-800 shadow-sm"><Clock className="mr-2 inline h-4 w-4" />{t("wait")}: {seconds} {t("seconds")}</div><button disabled={seconds > 0} onClick={onDone} className="tap rounded-2xl bg-slate-950 px-5 py-3 font-black text-white disabled:opacity-40">{t("worksheetContinue")}</button></div>
+        </div>
+      );
+    }
+
+    function BossLevel({ t, onDone }) {
+      const questions = useMemo(() => t("bossQuestions"), [t]);
+      const [started, setStarted] = useState(false);
+      const [time, setTime] = useState(60);
+      const [index, setIndex] = useState(0);
+      const [input, setInput] = useState("");
+      const [score, setScore] = useState(0);
+      const [wrong, setWrong] = useState(0);
+      const [finished, setFinished] = useState(false);
+
+      useEffect(() => {
+        if (!started || finished) return undefined;
+        if (time <= 0) {
+          setFinished(true);
+          return undefined;
+        }
+        const id = window.setTimeout(() => setTime((v) => v - 1), 1000);
+        return () => window.clearTimeout(id);
+      }, [started, time, finished]);
+
+      function submit() {
+        if (!input.trim()) return;
+        const q = questions[index % questions.length];
+        const ok = normalize(input) === normalize(q.a);
+        if (ok) setScore((s) => s + 1);
+        else setWrong((w) => w + 1);
+        setInput("");
+        setIndex((i) => i + 1);
+      }
+
+      if (!started) return <div className="rounded-[2rem] bg-slate-950 p-5 text-white sm:p-8"><div className="mb-4 flex items-center gap-3"><Rocket className="h-10 w-10 text-cyan-300" /><div><p className="text-xs font-black uppercase tracking-[.25em] text-cyan-300">{t("level")} 10</p><h3 className="text-3xl font-black">{t("bossTitle")}</h3></div></div><p className="max-w-2xl text-lg leading-relaxed text-slate-100">{t("bossIntro")}</p><button onClick={() => setStarted(true)} className="tap mt-6 rounded-2xl bg-cyan-300 px-5 py-3 font-black text-slate-950">{t("bossStart")}</button></div>;
+      if (finished) return <div className="rounded-[2rem] border border-emerald-200 bg-emerald-50 p-5 sm:p-8"><PartyPopper className="mb-3 h-12 w-12 text-emerald-700" /><h3 className="text-3xl font-black text-slate-950">{t("finished")}</h3><p className="mt-2 text-lg font-bold text-slate-700">{score} {t("correct")}, {wrong} {t("wrong")}</p><button onClick={() => onDone(score)} className="tap mt-6 rounded-2xl bg-slate-950 px-5 py-3 font-black text-white">{t("showCertificate")}</button></div>;
+      const q = questions[index % questions.length];
+      const charge = Math.min(100, Math.round((score / 10) * 100));
+      return <div className="rounded-[2rem] border border-slate-200 bg-white p-5 sm:p-8"><div className="mb-4 grid gap-3 sm:grid-cols-3"><div className="rounded-2xl bg-slate-950 p-4 text-white"><Timer className="mb-1 h-5 w-5 text-cyan-300" /><p className="text-xs font-black uppercase tracking-[.2em] text-cyan-100">{t("timeLeft")}</p><p className="text-3xl font-black">{time}</p></div><div className="rounded-2xl bg-emerald-50 p-4 text-emerald-950"><CheckCircle2 className="mb-1 h-5 w-5" /><p className="text-xs font-black uppercase tracking-[.2em]">{t("correct")}</p><p className="text-3xl font-black">{score}</p></div><div className="rounded-2xl bg-cyan-50 p-4 text-cyan-950"><Rocket className="mb-1 h-5 w-5" /><p className="text-xs font-black uppercase tracking-[.2em]">{t("rocketCharge")}</p><p className="text-3xl font-black">{charge}%</p></div></div><div className="rounded-3xl bg-slate-50 p-5"><h3 className="text-xl font-black text-slate-950">{q.q}</h3><input autoFocus value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") submit(); }} placeholder={t("inputPlaceholder")} className="mt-4 w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-lg font-black outline-none focus:border-cyan-400" /><button onClick={submit} className="tap mt-3 rounded-2xl bg-slate-950 px-5 py-3 font-black text-white">{t("check")}</button></div></div>;
+    }
+
+    function Certificate({ t, name, avatar, color, xp, resetApp }) {
+      const today = new Date().toLocaleDateString("de-DE");
+      return (
+        <section className="mx-auto max-w-4xl rounded-[2.5rem] border border-white/70 bg-white p-6 text-center shadow-2xl sm:p-10">
+          <div className="mx-auto mb-5 grid h-24 w-24 place-items-center rounded-[2rem] bg-slate-950 text-white shadow-xl"><Trophy className="h-14 w-14 text-amber-300" /></div>
+          <p className="text-xs font-black uppercase tracking-[.35em] text-cyan-700">{t("certificate")}</p>
+          <h2 className="mt-2 text-4xl font-black tracking-tight text-slate-950 sm:text-6xl">{name}</h2>
+          <div className={`mx-auto my-6 grid h-20 w-20 place-items-center rounded-[2rem] bg-gradient-to-br ${color} text-4xl shadow-xl`}>{avatar}</div>
+          <p className="mx-auto max-w-2xl text-xl font-bold leading-relaxed text-slate-700">{t("certificateText")}</p>
+          <div className="mt-8 grid gap-3 sm:grid-cols-2"><div className="rounded-3xl bg-slate-50 p-5"><p className="text-xs font-black uppercase tracking-[.2em] text-slate-500">{t("date")}</p><p className="text-2xl font-black text-slate-950">{today}</p></div><div className="rounded-3xl bg-slate-50 p-5"><p className="text-xs font-black uppercase tracking-[.2em] text-slate-500">{t("finalXp")}</p><p className="text-2xl font-black text-slate-950">{xp} XP</p></div></div>
+          <button onClick={resetApp} className="tap mt-8 rounded-2xl bg-slate-950 px-5 py-3 font-black text-white"><RotateCcw className="mr-2 inline h-5 w-5" />{t("restart")}</button>
+        </section>
+      );
+    }
+
+    function TeacherModal({ t, setTeacherOpen, teacherPw, setTeacherPw, teacherUnlocked, openTeacherPanel, teacherMsg, unlockAll, revealSolution, skipTask }) {
+      return (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/70 p-3 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-[2rem] bg-white p-5 shadow-2xl sm:p-7">
+            <div className="mb-4 flex items-center justify-between"><div><p className="text-xs font-black uppercase tracking-[.25em] text-cyan-700">{t("teacherHint")}</p><h2 className="text-2xl font-black text-slate-950">{t("teacher")}</h2></div><button onClick={() => setTeacherOpen(false)} className="tap rounded-2xl bg-slate-100 p-2"><XCircle className="h-6 w-6" /></button></div>
+            {!teacherUnlocked ? <div><label className="text-sm font-black text-slate-700">{t("password")}</label><div className="mt-2 flex gap-2"><input type="password" value={teacherPw} onChange={(e) => setTeacherPw(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") openTeacherPanel(); }} className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 font-bold outline-none focus:border-cyan-400" /><button onClick={openTeacherPanel} className="tap rounded-2xl bg-slate-950 px-4 py-3 font-black text-white"><KeyRound className="h-5 w-5" /></button></div>{teacherMsg && <p className="mt-3 text-sm font-bold text-amber-700">{teacherMsg}</p>}</div> : <div className="grid gap-2"><button onClick={unlockAll} className="tap rounded-2xl bg-cyan-600 px-4 py-3 text-left font-black text-white"><Unlock className="mr-2 inline h-5 w-5" />{t("unlockAll")}</button><button onClick={revealSolution} className="tap rounded-2xl bg-violet-600 px-4 py-3 text-left font-black text-white"><Eye className="mr-2 inline h-5 w-5" />{t("revealSolution")}</button><button onClick={skipTask} className="tap rounded-2xl bg-slate-950 px-4 py-3 text-left font-black text-white"><ChevronRight className="mr-2 inline h-5 w-5" />{t("skipTask")}</button></div>}
+          </div>
+        </div>
+      );
+    }
+
+    createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
