@@ -1,36 +1,37 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Insel-Escape: Variablen und Terme</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script type="importmap">
-    {
-      "imports": {
-        "react": "https://esm.sh/react@18.2.0",
-        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-        "lucide-react": "https://esm.sh/lucide-react@0.468.0"
-      }
-    }
-  </script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <style>
-    html, body { min-height: 100%; }
-    body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    .tap { -webkit-tap-highlight-color: transparent; }
-    .glass { background: rgba(255,255,255,.82); backdrop-filter: blur(16px); }
-    .grid-bg { background-image: linear-gradient(rgba(14,165,233,.10) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,.10) 1px, transparent 1px); background-size: 22px 22px; }
-    @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
-    .floaty { animation: floaty 2.6s ease-in-out infinite; }
-  </style>
-</head>
-<body class="bg-slate-950">
-  <div id="root"></div>
-  <script type="text/babel" data-presets="react" data-type="module">
-    import React, { useEffect, useMemo, useState } from "react";
-    import { createRoot } from "react-dom/client";
-    import { BookOpen, Brain, CheckCircle2, ChevronDown, ChevronUp, ChevronRight, Clock, Compass, Eye, Home, KeyRound, Lightbulb, Lock, Map, PartyPopper, PenLine, Rocket, RotateCcw, Sailboat, Settings, ShieldCheck, Star, Timer, Trophy, Unlock, UserRound, XCircle } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+const SvgIcon = ({ className = "", children }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    {children}
+  </svg>
+);
+
+const BookOpen = (props) => <SvgIcon {...props}><path d="M2 4h7a3 3 0 0 1 3 3v13a3 3 0 0 0-3-3H2z" /><path d="M22 4h-7a3 3 0 0 0-3 3v13a3 3 0 0 1 3-3h7z" /></SvgIcon>;
+const Brain = (props) => <SvgIcon {...props}><path d="M9 3a3 3 0 0 0-3 3v1a4 4 0 0 0 0 8v1a3 3 0 0 0 5 2.2" /><path d="M15 3a3 3 0 0 1 3 3v1a4 4 0 0 1 0 8v1a3 3 0 0 1-5 2.2" /><path d="M12 5v14" /></SvgIcon>;
+const CheckCircle2 = (props) => <SvgIcon {...props}><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-5" /></SvgIcon>;
+const ChevronDown = (props) => <SvgIcon {...props}><path d="m6 9 6 6 6-6" /></SvgIcon>;
+const ChevronUp = (props) => <SvgIcon {...props}><path d="m18 15-6-6-6 6" /></SvgIcon>;
+const ChevronRight = (props) => <SvgIcon {...props}><path d="m9 18 6-6-6-6" /></SvgIcon>;
+const Clock = (props) => <SvgIcon {...props}><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></SvgIcon>;
+const Compass = (props) => <SvgIcon {...props}><circle cx="12" cy="12" r="10" /><path d="m16 8-2.5 5.5L8 16l2.5-5.5z" /></SvgIcon>;
+const Eye = (props) => <SvgIcon {...props}><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></SvgIcon>;
+const Home = (props) => <SvgIcon {...props}><path d="m3 11 9-8 9 8" /><path d="M5 10v10h14V10" /><path d="M9 20v-6h6v6" /></SvgIcon>;
+const KeyRound = (props) => <SvgIcon {...props}><circle cx="8" cy="15" r="4" /><path d="m11 12 9-9" /><path d="m16 7 2 2" /><path d="m18 5 2 2" /></SvgIcon>;
+const Lightbulb = (props) => <SvgIcon {...props}><path d="M9 18h6" /><path d="M10 22h4" /><path d="M8 14a6 6 0 1 1 8 0c-1 1-1 2-1 4H9c0-2 0-3-1-4z" /></SvgIcon>;
+const Lock = (props) => <SvgIcon {...props}><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></SvgIcon>;
+const Map = (props) => <SvgIcon {...props}><path d="M9 18 3 21V6l6-3 6 3 6-3v15l-6 3z" /><path d="M9 3v15" /><path d="M15 6v15" /></SvgIcon>;
+const PartyPopper = (props) => <SvgIcon {...props}><path d="M5 22 19 8l-5-5L2 17z" /><path d="M14 3c2 2 4 4 7 5" /><path d="M15 9c2 0 4 1 6 3" /><path d="M9 15c1 1 2 2 3 3" /></SvgIcon>;
+const PenLine = (props) => <SvgIcon {...props}><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></SvgIcon>;
+const Rocket = (props) => <SvgIcon {...props}><path d="M4.5 16.5c-1.5 1.5-2 4-2 4s2.5-.5 4-2" /><path d="M9 15 4 10l5-1 6-6c2-2 5-1 6-1 0 1 1 4-1 6l-6 6z" /><path d="M15 9h.01" /></SvgIcon>;
+const RotateCcw = (props) => <SvgIcon {...props}><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v6h6" /></SvgIcon>;
+const Sailboat = (props) => <SvgIcon {...props}><path d="M6 20h12" /><path d="M8 18l4-16 4 16" /><path d="M8 18h8" /><path d="M12 2v16" /></SvgIcon>;
+const Settings = (props) => <SvgIcon {...props}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2 3-.2-.1a1.7 1.7 0 0 0-2-.2 1.7 1.7 0 0 0-1 1.5V22h-5v-.3a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-2 .2l-.2.1-2-3 .1-.1A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.5-1H3v-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1 2-3 .2.1a1.7 1.7 0 0 0 2 .2 1.7 1.7 0 0 0 1-1.5V2h5v.3a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 2-.2l.2-.1 2 3-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1v4h-.1a1.7 1.7 0 0 0-1.5 1z" /></SvgIcon>;
+const ShieldCheck = (props) => <SvgIcon {...props}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-5" /></SvgIcon>;
+const Star = (props) => <SvgIcon {...props}><path d="m12 2 3 6 6 .9-4.5 4.4 1.1 6.2L12 16.6 6.4 19.5l1.1-6.2L3 8.9 9 8z" /></SvgIcon>;
+const Timer = (props) => <SvgIcon {...props}><circle cx="12" cy="13" r="8" /><path d="M12 9v4l3 2" /><path d="M9 2h6" /></SvgIcon>;
+const Trophy = (props) => <SvgIcon {...props}><path d="M8 21h8" /><path d="M12 17v4" /><path d="M7 4h10v5a5 5 0 0 1-10 0z" /><path d="M5 6H3a3 3 0 0 0 4 3" /><path d="M19 6h2a3 3 0 0 1-4 3" /></SvgIcon>;
+const Unlock = (props) => <SvgIcon {...props}><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 7.5-2" /></SvgIcon>;
+const UserRound = (props) => <SvgIcon {...props}><circle cx="12" cy="8" r="4" /><path d="M4 22a8 8 0 0 1 16 0" /></SvgIcon>;
+const XCircle = (props) => <SvgIcon {...props}><circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></SvgIcon>;
 
     const translations = {
       de: {
@@ -281,15 +282,15 @@
     const getValue = (obj, path) => path.split(".").reduce((acc, part) => (acc == null ? undefined : acc[part]), obj);
 
     const levelStages = [
-      ["info", "single", "drag", "worksheet"],
+      ["info", "single", "drag"],
       ["info", "multiple", "gap"],
-      ["info", "single", "input", "worksheet"],
+      ["info", "single", "input"],
       ["info", "drag", "hotspot"],
-      ["info", "input", "sort", "worksheet"],
+      ["info", "input", "sort"],
       ["info", "single", "multiple"],
-      ["info", "input", "multiple", "worksheet"],
+      ["info", "input", "multiple"],
       ["info", "single", "hotspot"],
-      ["info", "single", "input", "worksheet"],
+      ["info", "single", "input"],
       ["info", "boss"]
     ];
 
@@ -541,8 +542,7 @@
           </div>
           <div className="mb-5 h-3 overflow-hidden rounded-full bg-slate-200"><div className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-400 transition-all" style={{ width: `${((stage + 1) / stages.length) * 100}%` }}></div></div>
           {current === "info" && <InfoCard t={t} levelIndex={levelIndex} onNext={goNext} />}
-          {current !== "info" && current !== "worksheet" && current !== "boss" && <TaskRenderer t={t} levelIndex={levelIndex} type={current} onSolved={() => { addXp(20); goNext(); }} showSolution={showSolution} />}
-          {current === "worksheet" && <WorksheetModal t={t} onDone={goNext} />}
+          {current !== "info" && current !== "boss" && <TaskRenderer t={t} levelIndex={levelIndex} type={current} onSolved={() => { addXp(20); goNext(); }} showSolution={showSolution} />}
           {current === "boss" && <BossLevel t={t} onDone={(score) => completeLevel(levelIndex, 80 + score * 10)} />}
         </section>
       );
@@ -705,22 +705,6 @@
       return <TaskShell t={t} question={question} solution={correct.map((i) => items[i]).join(" → ")} showSolution={showSolution}><p className="mb-3 text-sm font-bold text-slate-600">{t("sortInstruction")}</p><div className="space-y-2">{order.map((itemIndex,pos) => <div key={itemIndex} className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-3"><div className="grid h-9 w-9 place-items-center rounded-xl bg-slate-950 text-sm font-black text-white">{pos + 1}</div><p className="flex-1 text-sm font-black text-slate-800">{items[itemIndex]}</p><button onClick={() => move(pos, -1)} className="tap rounded-xl bg-white p-2 shadow-sm"><ChevronUp className="h-4 w-4" /></button><button onClick={() => move(pos, 1)} className="tap rounded-xl bg-white p-2 shadow-sm"><ChevronDown className="h-4 w-4" /></button></div>)}</div><button onClick={submit} className="tap mt-4 rounded-2xl bg-slate-950 px-5 py-3 font-black text-white">{t("check")}</button><Feedback t={t} status={status} attempts={attempts} explanation={explanation} /></TaskShell>;
     }
 
-    function WorksheetModal({ t, onDone }) {
-      const [seconds, setSeconds] = useState(15);
-      useEffect(() => {
-        if (seconds <= 0) return undefined;
-        const id = window.setTimeout(() => setSeconds((s) => s - 1), 1000);
-        return () => window.clearTimeout(id);
-      }, [seconds]);
-      return (
-        <div className="rounded-[2rem] border border-amber-200 bg-amber-50 p-5 sm:p-8">
-          <div className="mb-4 flex items-center gap-3"><div className="grid h-14 w-14 place-items-center rounded-2xl bg-amber-300 text-amber-950"><PenLine className="h-8 w-8" /></div><div><p className="text-xs font-black uppercase tracking-[.25em] text-amber-800">{t("worksheetPhase")}</p><h3 className="text-2xl font-black text-slate-950">{t("worksheetPhase")}</h3></div></div>
-          <p className="max-w-2xl text-base font-semibold leading-relaxed text-slate-700">{t("worksheetText")}</p>
-          <div className="mt-5 flex flex-wrap items-center gap-3"><div className="rounded-2xl bg-white px-4 py-3 text-sm font-black text-slate-800 shadow-sm"><Clock className="mr-2 inline h-4 w-4" />{t("wait")}: {seconds} {t("seconds")}</div><button disabled={seconds > 0} onClick={onDone} className="tap rounded-2xl bg-slate-950 px-5 py-3 font-black text-white disabled:opacity-40">{t("worksheetContinue")}</button></div>
-        </div>
-      );
-    }
-
     function BossLevel({ t, onDone }) {
       const questions = useMemo(() => t("bossQuestions"), [t]);
       const [started, setStarted] = useState(false);
@@ -784,7 +768,4 @@
       );
     }
 
-    createRoot(document.getElementById("root")).render(<App />);
-  </script>
-</body>
-</html>
+export default App;
