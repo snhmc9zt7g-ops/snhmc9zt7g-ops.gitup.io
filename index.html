@@ -122,6 +122,10 @@ const XCircle = (props) => <SvgIcon {...props}><circle cx="12" cy="12" r="10" />
         wrong: "falsch",
         finished: "Finale beendet",
         showCertificate: "Zertifikat anzeigen",
+        highscore: "Highscore",
+        highscores: "Highscores",
+        noHighscores: "Noch keine Highscores gespeichert.",
+        points: "Punkte",
         mapLegend: "Der Avatar bewegt sich mit jedem geschafften Level näher zum Rettungsboot.",
         profile: "Profil",
         mode: "Modus",
@@ -321,6 +325,10 @@ const XCircle = (props) => <SvgIcon {...props}><circle cx="12" cy="12" r="10" />
       wrong: "wrong",
       finished: "Finale finished",
       showCertificate: "Show certificate",
+      highscore: "Highscore",
+      highscores: "Highscores",
+      noHighscores: "No highscores saved yet.",
+      points: "points",
       mapLegend: "Your avatar moves closer to the rescue boat with each completed level.",
       profile: "Profile",
       mode: "Mode",
@@ -441,7 +449,7 @@ const XCircle = (props) => <SvgIcon {...props}><circle cx="12" cy="12" r="10" />
           <main className="mx-auto w-full max-w-6xl px-3 pb-8 pt-3 sm:px-5">
             {view === "welcome" && <Welcome t={t} mode={mode} setMode={setMode} name={name} setName={setName} avatar={avatar} setAvatar={setAvatar} color={color} setColor={setColor} startMission={() => setView("menu")} />}
             {view === "menu" && <MenuView t={t} displayName={displayName} avatar={avatar} color={color} mode={mode} unlocked={unlocked} completed={completed} enterLevel={enterLevel} progressPercent={progressPercent} />}
-            {view === "level" && <LevelView t={t} levelIndex={currentLevel} stage={stage} setStage={setStage} completeLevel={completeLevel} setView={setView} addXp={(n) => setXp((p) => p + n)} showSolution={showSolution} setShowSolution={setShowSolution} />}
+            {view === "level" && <LevelView t={t} levelIndex={currentLevel} stage={stage} setStage={setStage} completeLevel={completeLevel} setView={setView} addXp={(n) => setXp((p) => p + n)} showSolution={showSolution} setShowSolution={setShowSolution} playerName={displayName} />}
             {view === "certificate" && <Certificate t={t} name={displayName} avatar={avatar} color={color} xp={xp} resetApp={resetApp} />}
           </main>
           {teacherOpen && <TeacherModal t={t} setTeacherOpen={setTeacherOpen} teacherPw={teacherPw} setTeacherPw={setTeacherPw} teacherUnlocked={teacherUnlocked} openTeacherPanel={openTeacherPanel} teacherMsg={teacherMsg} unlockAll={() => setUnlocked(10)} revealSolution={() => setShowSolution(true)} skipTask={() => window.dispatchEvent(new CustomEvent("teacher-skip-task"))} />}
@@ -583,7 +591,7 @@ const XCircle = (props) => <SvgIcon {...props}><circle cx="12" cy="12" r="10" />
       );
     }
 
-    function LevelView({ t, levelIndex, stage, setStage, completeLevel, setView, addXp, showSolution, setShowSolution }) {
+    function LevelView({ t, levelIndex, stage, setStage, completeLevel, setView, addXp, showSolution, setShowSolution, playerName }) {
       const stages = levelStages[levelIndex] || levelStages[0];
       const current = stages[stage] || stages[0];
       const isLast = stage >= stages.length - 1;
@@ -613,7 +621,7 @@ const XCircle = (props) => <SvgIcon {...props}><circle cx="12" cy="12" r="10" />
           <div className="mb-5 h-3 overflow-hidden rounded-full bg-slate-200"><div className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-400 transition-all" style={{ width: `${((stage + 1) / stages.length) * 100}%` }}></div></div>
           {current === "info" && <InfoCard t={t} levelIndex={levelIndex} onNext={goNext} />}
           {current !== "info" && current !== "boss" && <TaskRenderer t={t} levelIndex={levelIndex} type={current} onSolved={() => { addXp(20); goNext(); }} showSolution={showSolution} />}
-          {current === "boss" && <BossLevel t={t} onDone={(score) => completeLevel(levelIndex, 80 + score * 10)} />}
+          {current === "boss" && <BossLevel t={t} playerName={playerName} onDone={(score) => completeLevel(levelIndex, 80 + score * 10)} />}
         </section>
       );
     }
@@ -775,7 +783,7 @@ const XCircle = (props) => <SvgIcon {...props}><circle cx="12" cy="12" r="10" />
       return <TaskShell t={t} question={question} solution={correct.map((i) => items[i]).join(" → ")} showSolution={showSolution}><p className="mb-3 text-sm font-bold text-slate-600">{t("sortInstruction")}</p><div className="space-y-2">{order.map((itemIndex,pos) => <div key={itemIndex} className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-3"><div className="grid h-9 w-9 place-items-center rounded-xl bg-slate-950 text-sm font-black text-white">{pos + 1}</div><p className="flex-1 text-sm font-black text-slate-800">{items[itemIndex]}</p><button onClick={() => move(pos, -1)} className="tap rounded-xl bg-white p-2 shadow-sm"><ChevronUp className="h-4 w-4" /></button><button onClick={() => move(pos, 1)} className="tap rounded-xl bg-white p-2 shadow-sm"><ChevronDown className="h-4 w-4" /></button></div>)}</div><button onClick={submit} className="tap mt-4 rounded-2xl bg-slate-950 px-5 py-3 font-black text-white">{t("check")}</button><Feedback t={t} status={status} attempts={attempts} explanation={explanation} /></TaskShell>;
     }
 
-    function BossLevel({ t, onDone }) {
+    function BossLevel({ t, playerName, onDone }) {
       const questions = useMemo(() => t("bossQuestions"), [t]);
       const [started, setStarted] = useState(false);
       const [time, setTime] = useState(60);
@@ -784,6 +792,17 @@ const XCircle = (props) => <SvgIcon {...props}><circle cx="12" cy="12" r="10" />
       const [score, setScore] = useState(0);
       const [wrong, setWrong] = useState(0);
       const [finished, setFinished] = useState(false);
+      const [saved, setSaved] = useState(false);
+      const [questionOrder, setQuestionOrder] = useState([]);
+      const [highScores, setHighScores] = useState(() => {
+        try {
+          const stored = window.localStorage.getItem("termInselHighscores");
+          const parsed = stored ? JSON.parse(stored) : [];
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+          return [];
+        }
+      });
 
       useEffect(() => {
         if (!started || finished) return undefined;
@@ -795,9 +814,30 @@ const XCircle = (props) => <SvgIcon {...props}><circle cx="12" cy="12" r="10" />
         return () => window.clearTimeout(id);
       }, [started, time, finished]);
 
+      useEffect(() => {
+        if (!finished || saved) return;
+        const entry = {
+          name: playerName || "Term-Tiger",
+          score,
+          wrong,
+          date: new Date().toLocaleDateString("de-DE")
+        };
+        setHighScores((previous) => {
+          const updated = [entry, ...previous]
+            .sort((a, b) => b.score - a.score || a.wrong - b.wrong || String(b.date).localeCompare(String(a.date)))
+            .slice(0, 10);
+          try {
+            window.localStorage.setItem("termInselHighscores", JSON.stringify(updated));
+          } catch (error) {}
+          return updated;
+        });
+        setSaved(true);
+      }, [finished, saved, score, wrong, playerName]);
+
       function submit() {
         if (!input.trim()) return;
-        const q = questions[index % questions.length];
+        const activeQuestions = questionOrder.length > 0 ? questionOrder : questions;
+        const q = activeQuestions[index % activeQuestions.length];
         const acceptedAnswers = Array.isArray(q.a) ? q.a : [q.a];
         const ok = acceptedAnswers.some((answer) => normalize(input) === normalize(answer));
         if (ok) setScore((s) => s + 1);
@@ -806,9 +846,17 @@ const XCircle = (props) => <SvgIcon {...props}><circle cx="12" cy="12" r="10" />
         setIndex((i) => i + 1);
       }
 
-      if (!started) return <div className="rounded-[2rem] bg-slate-950 p-5 text-white sm:p-8"><div className="mb-4 flex items-center gap-3"><Rocket className="h-10 w-10 text-cyan-300" /><div><p className="text-xs font-black uppercase tracking-[.25em] text-cyan-300">{t("level")} 10</p><h3 className="text-3xl font-black">{t("bossTitle")}</h3></div></div><p className="max-w-2xl text-lg leading-relaxed text-slate-100">{t("bossIntro")}</p><button onClick={() => setStarted(true)} className="tap mt-6 rounded-2xl bg-cyan-300 px-5 py-3 font-black text-slate-950">{t("bossStart")}</button></div>;
-      if (finished) return <div className="rounded-[2rem] border border-emerald-200 bg-emerald-50 p-5 sm:p-8"><PartyPopper className="mb-3 h-12 w-12 text-emerald-700" /><h3 className="text-3xl font-black text-slate-950">{t("finished")}</h3><p className="mt-2 text-lg font-bold text-slate-700">{score} {t("correct")}, {wrong} {t("wrong")}</p><button onClick={() => onDone(score)} className="tap mt-6 rounded-2xl bg-slate-950 px-5 py-3 font-black text-white">{t("showCertificate")}</button></div>;
-      const q = questions[index % questions.length];
+      const HighscoreList = () => (
+        <div className="mt-6 rounded-3xl border border-white/15 bg-white/10 p-4 text-left">
+          <div className="mb-3 flex items-center gap-2 font-black"><Trophy className="h-5 w-5 text-amber-300" />{t("highscores")}</div>
+          {highScores.length === 0 ? <p className="text-sm font-semibold text-slate-200">{t("noHighscores")}</p> : <div className="space-y-2">{highScores.map((entry, i) => <div key={`${entry.name}-${entry.score}-${entry.date}-${i}`} className="flex items-center justify-between gap-3 rounded-2xl bg-white/10 px-3 py-2 text-sm"><div className="min-w-0"><span className="mr-2 font-black text-cyan-200">#{i + 1}</span><span className="font-black text-white">{entry.name}</span><span className="ml-2 text-xs font-semibold text-slate-300">{entry.date}</span></div><div className="shrink-0 font-black text-amber-200">{entry.score} {t("points")}</div></div>)}</div>}
+        </div>
+      );
+
+      if (!started) return <div className="rounded-[2rem] bg-slate-950 p-5 text-white sm:p-8"><div className="mb-4 flex items-center gap-3"><Rocket className="h-10 w-10 text-cyan-300" /><div><p className="text-xs font-black uppercase tracking-[.25em] text-cyan-300">{t("level")} 10</p><h3 className="text-3xl font-black">{t("bossTitle")}</h3></div></div><p className="max-w-2xl text-lg leading-relaxed text-slate-100">{t("bossIntro")}</p><button onClick={() => { setQuestionOrder([...questions].sort(() => Math.random() - 0.5)); setStarted(true); }} className="tap mt-6 rounded-2xl bg-cyan-300 px-5 py-3 font-black text-slate-950">{t("bossStart")}</button><HighscoreList /></div>;
+      if (finished) return <div className="rounded-[2rem] border border-emerald-200 bg-emerald-50 p-5 sm:p-8"><PartyPopper className="mb-3 h-12 w-12 text-emerald-700" /><h3 className="text-3xl font-black text-slate-950">{t("finished")}</h3><p className="mt-2 text-lg font-bold text-slate-700">{score} {t("correct")}, {wrong} {t("wrong")}</p><div className="mt-6 rounded-3xl bg-slate-950 p-4 text-white"><HighscoreList /></div><button onClick={() => onDone(score)} className="tap mt-6 rounded-2xl bg-slate-950 px-5 py-3 font-black text-white">{t("showCertificate")}</button></div>;
+      const activeQuestions = questionOrder.length > 0 ? questionOrder : questions;
+      const q = activeQuestions[index % activeQuestions.length];
       const charge = Math.min(100, Math.round((score / 10) * 100));
       return <div className="rounded-[2rem] border border-slate-200 bg-white p-5 sm:p-8"><div className="mb-4 grid gap-3 sm:grid-cols-3"><div className="rounded-2xl bg-slate-950 p-4 text-white"><Timer className="mb-1 h-5 w-5 text-cyan-300" /><p className="text-xs font-black uppercase tracking-[.2em] text-cyan-100">{t("timeLeft")}</p><p className="text-3xl font-black">{time}</p></div><div className="rounded-2xl bg-emerald-50 p-4 text-emerald-950"><CheckCircle2 className="mb-1 h-5 w-5" /><p className="text-xs font-black uppercase tracking-[.2em]">{t("correct")}</p><p className="text-3xl font-black">{score}</p></div><div className="rounded-2xl bg-cyan-50 p-4 text-cyan-950"><Rocket className="mb-1 h-5 w-5" /><p className="text-xs font-black uppercase tracking-[.2em]">{t("rocketCharge")}</p><p className="text-3xl font-black">{charge}%</p></div></div><div className="rounded-3xl bg-slate-50 p-5"><h3 className="text-xl font-black text-slate-950">{q.q}</h3><input autoFocus value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") submit(); }} placeholder={t("inputPlaceholder")} className="mt-4 w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-lg font-black outline-none focus:border-cyan-400" /><button onClick={submit} className="tap mt-3 rounded-2xl bg-slate-950 px-5 py-3 font-black text-white">{t("check")}</button></div></div>;
     }
