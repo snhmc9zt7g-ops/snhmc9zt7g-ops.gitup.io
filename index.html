@@ -126,6 +126,9 @@ const XCircle = (props) => <SvgIcon {...props}><circle cx="12" cy="12" r="10" />
         highscores: "Highscores",
         noHighscores: "Noch keine Highscores gespeichert.",
         points: "Punkte",
+        answeredQuestions: "Auswertung der beantworteten Fragen",
+        yourAnswer: "Deine Antwort",
+        correctAnswer: "Richtige Lösung",
         mapLegend: "Der Avatar bewegt sich mit jedem geschafften Level näher zum Rettungsboot.",
         profile: "Profil",
         mode: "Modus",
@@ -329,6 +332,9 @@ const XCircle = (props) => <SvgIcon {...props}><circle cx="12" cy="12" r="10" />
       highscores: "Highscores",
       noHighscores: "No highscores saved yet.",
       points: "points",
+      answeredQuestions: "Review of answered questions",
+      yourAnswer: "Your answer",
+      correctAnswer: "Correct answer",
       mapLegend: "Your avatar moves closer to the rescue boat with each completed level.",
       profile: "Profile",
       mode: "Mode",
@@ -794,6 +800,7 @@ const XCircle = (props) => <SvgIcon {...props}><circle cx="12" cy="12" r="10" />
       const [finished, setFinished] = useState(false);
       const [saved, setSaved] = useState(false);
       const [questionOrder, setQuestionOrder] = useState([]);
+      const [answered, setAnswered] = useState([]);
       const [highScores, setHighScores] = useState(() => {
         try {
           const stored = window.localStorage.getItem("termInselHighscores");
@@ -840,6 +847,7 @@ const XCircle = (props) => <SvgIcon {...props}><circle cx="12" cy="12" r="10" />
         const q = activeQuestions[index % activeQuestions.length];
         const acceptedAnswers = Array.isArray(q.a) ? q.a : [q.a];
         const ok = acceptedAnswers.some((answer) => normalize(input) === normalize(answer));
+        setAnswered((previous) => [...previous, { question: q.q, userAnswer: input, correctAnswer: acceptedAnswers[0], ok }]);
         if (ok) setScore((s) => s + 1);
         else setWrong((w) => w + 1);
         setInput("");
@@ -853,8 +861,24 @@ const XCircle = (props) => <SvgIcon {...props}><circle cx="12" cy="12" r="10" />
         </div>
       );
 
+      const AnswerReview = () => {
+        const sortedAnswers = [...answered].sort((a, b) => Number(a.ok) - Number(b.ok));
+        return (
+          <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-4 text-left shadow-sm">
+            <div className="mb-3 flex items-center gap-2 text-lg font-black text-slate-950"><CheckCircle2 className="h-5 w-5 text-emerald-700" />{t("answeredQuestions")}</div>
+            <div className="max-h-96 space-y-3 overflow-y-auto pr-1">
+              {sortedAnswers.map((entry, i) => <div key={`${entry.question}-${i}`} className={`rounded-2xl border p-3 ${entry.ok ? "border-emerald-200 bg-emerald-50" : "border-rose-200 bg-rose-50"}`}>
+                <div className="mb-2 flex items-start justify-between gap-3"><p className="font-black text-slate-950">{entry.question}</p><span className={`shrink-0 rounded-full px-2 py-1 text-xs font-black ${entry.ok ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"}`}>{entry.ok ? t("correct") : t("wrong")}</span></div>
+                <p className="text-sm font-semibold text-slate-700"><span className="font-black">{t("yourAnswer")}:</span> {entry.userAnswer}</p>
+                <p className="text-sm font-semibold text-slate-700"><span className="font-black">{t("correctAnswer")}:</span> {entry.correctAnswer}</p>
+              </div>)}
+            </div>
+          </div>
+        );
+      };
+
       if (!started) return <div className="rounded-[2rem] bg-slate-950 p-5 text-white sm:p-8"><div className="mb-4 flex items-center gap-3"><Rocket className="h-10 w-10 text-cyan-300" /><div><p className="text-xs font-black uppercase tracking-[.25em] text-cyan-300">{t("level")} 10</p><h3 className="text-3xl font-black">{t("bossTitle")}</h3></div></div><p className="max-w-2xl text-lg leading-relaxed text-slate-100">{t("bossIntro")}</p><button onClick={() => { setQuestionOrder([...questions].sort(() => Math.random() - 0.5)); setStarted(true); }} className="tap mt-6 rounded-2xl bg-cyan-300 px-5 py-3 font-black text-slate-950">{t("bossStart")}</button><HighscoreList /></div>;
-      if (finished) return <div className="rounded-[2rem] border border-emerald-200 bg-emerald-50 p-5 sm:p-8"><PartyPopper className="mb-3 h-12 w-12 text-emerald-700" /><h3 className="text-3xl font-black text-slate-950">{t("finished")}</h3><p className="mt-2 text-lg font-bold text-slate-700">{score} {t("correct")}, {wrong} {t("wrong")}</p><div className="mt-6 rounded-3xl bg-slate-950 p-4 text-white"><HighscoreList /></div><button onClick={() => onDone(score)} className="tap mt-6 rounded-2xl bg-slate-950 px-5 py-3 font-black text-white">{t("showCertificate")}</button></div>;
+      if (finished) return <div className="rounded-[2rem] border border-emerald-200 bg-emerald-50 p-5 sm:p-8"><PartyPopper className="mb-3 h-12 w-12 text-emerald-700" /><h3 className="text-3xl font-black text-slate-950">{t("finished")}</h3><p className="mt-2 text-lg font-bold text-slate-700">{score} {t("correct")}, {wrong} {t("wrong")}</p><div className="mt-6 rounded-3xl bg-slate-950 p-4 text-white"><HighscoreList /></div><AnswerReview /><button onClick={() => onDone(score)} className="tap mt-6 rounded-2xl bg-slate-950 px-5 py-3 font-black text-white">{t("showCertificate")}</button></div>;
       const activeQuestions = questionOrder.length > 0 ? questionOrder : questions;
       const q = activeQuestions[index % activeQuestions.length];
       const charge = Math.min(100, Math.round((score / 10) * 100));
