@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Herr Borberg – Mathe & Physik</title>
+
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --math: #7c3aed;
+      --physics: #059669;
+      --shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #eff6ff, #f8fafc);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      padding: 60px 20px 35px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      color: var(--primary-dark);
+    }
+
+    header p {
+      margin-top: 12px;
+      font-size: 1.15rem;
+      color: var(--muted);
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .section-title {
+      margin: 35px 0 18px;
+      font-size: 1.6rem;
+      border-left: 6px solid var(--primary);
+      padding-left: 12px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 22px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      text-decoration: none;
+      color: var(--text);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      border: 2px solid transparent;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.12);
+      border-color: var(--primary);
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 1.25rem;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .math {
+      border-top: 6px solid var(--math);
+    }
+
+    .physics {
+      border-top: 6px solid var(--physics);
+    }
+
+    .info-box {
+      margin-top: 40px;
+      background: #ffffff;
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      line-height: 1.6;
+    }
+
+    footer {
+      text-align: center;
+      padding: 35px 20px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <span class="badge">Mathe & Physik</span>
+    <h1>Herr Borberg</h1>
+    <p>Digitale Materialien, Übungen und Lernangebote für den Unterricht</p>
+  </header>
+
+  <main>
+    <h2 class="section-title">Mathematik</h2>
+
+    <section class="grid">
+      <a class="card math" href="terme.html">
+        <h3>Terme und Variablen</h3>
+        <p>Übungen, Lernspiele und Aufgaben zum Aufstellen und Vereinfachen von Termen.</p>
+      </a>
+
+      <a class="card math" href="gleichungen.html">
+        <h3>Gleichungen</h3>
+        <p>Materialien zum Lösen von Gleichungen und zum Umformen mathematischer Ausdrücke.</p>
+      </a>
+
+      <a class="card math" href="funktionen.html">
+        <h3>Funktionen</h3>
+        <p>Übungen zu linearen Funktionen, Graphen, Tabellen und Funktionsgleichungen.</p>
+      </a>
+    </section>
+
+    <h2 class="section-title">Physik</h2>
+
+    <section class="grid">
+      <a class="card physics" href="hebelgesetz.html">
+        <h3>Hebelgesetz</h3>
+        <p>Interaktive Aufgaben und Wiederholungen zum Hebelgesetz.</p>
+      </a>
+
+      <a class="card physics" href="flaschenzug.html">
+        <h3>Flaschenzüge</h3>
+        <p>Materialien zu festen Rollen, losen Rollen und der Kraftersparnis beim Flaschenzug.</p>
+      </a>
+
+      <a class="card physics" href="gravitation.html">
+        <h3>Gravitation</h3>
+        <p>Einstiege, Aufgaben und Visualisierungen zum Thema Gravitation und Astronomie.</p>
+      </a>
+    </section>
+
+    <div class="info-box">
+      <h2>Hinweis</h2>
+      <p>
+        Wähle oben ein Thema aus. Die verlinkten Seiten öffnen jeweils eigene Materialien,
+        Übungen oder Lernspiele.
+      </p>
+      <p>
+        Falls ein Link noch nicht funktioniert, wurde die entsprechende Seite vermutlich
+        noch nicht hochgeladen.
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    © 2026 Herr Borberg – Unterrichtsmaterialien für Mathematik und Physik
+  </footer>
+</body>
+</html>
