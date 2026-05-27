@@ -1,67 +1,1018 @@
 <!DOCTYPE html>
-
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mission Additio – Lernpfad Additionsverfahren</title>
 
-  <script type="importmap">
-    {
-      "imports": {
-        "react": "https://esm.sh/react@18.2.0",
-        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client"
-      }
-    }
-  </script>
-
   <script>
-    tailwind.config = {
+    window.tailwind = window.tailwind || {};
+    window.tailwind.config = {
       theme: {
         extend: {
-          fontFamily: {
-            sans: ["Inter", "ui-sans-serif", "system-ui", "Arial"]
-          },
-          boxShadow: {
-            glow: "0 0 28px rgba(56, 189, 248, 0.35)"
-          }
+          fontFamily: { sans: ["Inter", "ui-sans-serif", "system-ui", "Arial"] },
+          boxShadow: { glow: "0 0 30px rgba(56, 189, 248, 0.35)" }
         }
       }
     };
   </script>
-
   <script src="https://cdn.tailwindcss.com"></script>
-
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <style>
-    html, body { height: 100%; }
+    html, body { min-height: 100%; }
     body {
       margin: 0;
       background:
-        radial-gradient(circle at top left, rgba(14,165,233,.25), transparent 32%),
-        radial-gradient(circle at 85% 20%, rgba(168,85,247,.22), transparent 28%),
-        linear-gradient(135deg, #0f172a 0%, #111827 45%, #020617 100%);
+        radial-gradient(circle at 10% 0%, rgba(56,189,248,.26), transparent 32%),
+        radial-gradient(circle at 92% 12%, rgba(217,70,239,.18), transparent 34%),
+        radial-gradient(circle at 45% 95%, rgba(34,197,94,.13), transparent 32%),
+        linear-gradient(135deg, #020617 0%, #0f172a 48%, #111827 100%);
       color: #f8fafc;
     }
-    .glass {
-      background: rgba(15, 23, 42, 0.72);
-      backdrop-filter: blur(18px);
-      border: 1px solid rgba(148, 163, 184, 0.22);
+    .glass { background: rgba(15, 23, 42, 0.74); backdrop-filter: blur(18px); border: 1px solid rgba(148, 163, 184, 0.22); }
+    .soft-card { background: rgba(255,255,255,.94); color: #0f172a; border: 1px solid rgba(226,232,240,.9); }
+    .map-line { background: linear-gradient(90deg, #38bdf8, #a78bfa, #22c55e); height: 7px; border-radius: 999px; }
+    .pulse-avatar { animation: pulseAvatar 1.8s infinite; }
+    @keyframes pulseAvatar {
+      0%,100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 0 rgba(56,189,248,0)); }
+      50% { transform: translateY(-5px) scale(1.05); filter: drop-shadow(0 0 14px rgba(56,189,248,.9)); }
     }
-    .soft-card {
-      background: rgba(255, 255, 255, 0.92);
-      color: #0f172a;
-      border: 1px solid rgba(226, 232, 240, 0.9);
+    .floaty { animation: floaty 4s ease-in-out infinite; }
+    @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    .drag-card[draggable="true"] { cursor: grab; }
+    .drag-card:active { cursor: grabbing; }
+    input, textarea, select { color: #0f172a; }
+    @media print {
+      body { background: white; }
+      header, .print\:hidden { display: none !important; }
     }
-    .map-line {
-      background: linear-gradient(90deg, #38bdf8, #a78bfa, #22c55e);
-      height: 7px;
-      border-radius: 999px;
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useEffect, useMemo, useState } = React;
+    const { createRoot } = ReactDOM;
+
+    const STORAGE_KEY = "mission-additio-progress-v2";
+    const TEACHER_PASSWORDS = ["Borberg", "borberg"];
+
+    const AVATARS = ["🚀", "🧠", "🦊", "🐼", "🐲", "🤖", "🦉", "⚡"];
+    const COLORS = [
+      { name: "Himmel", value: "from-sky-400 to-cyan-300" },
+      { name: "Violett", value: "from-violet-400 to-fuchsia-400" },
+      { name: "Grün", value: "from-emerald-400 to-lime-300" },
+      { name: "Orange", value: "from-orange-400 to-amber-300" },
+      { name: "Rot", value: "from-rose-400 to-pink-300" }
+    ];
+    const NICKNAMES = ["Term-Titan", "Koordinaten-Captain", "Gleichungs-Profi", "Additio-Agent", "Variablen-Held", "Rechen-Ranger", "Balance-Ninja", "X-und-Y-Scout", "Lösungs-Luchs", "Mathe-Meteor"];
+
+    function normalizeText(value) {
+      return String(value ?? "")
+        .toLowerCase()
+        .trim()
+        .replace(/−/g, "-")
+        .replace(/,/g, ".")
+        .replace(/\s+/g, "")
+        .replace(/[{}\[\]]/g, "")
+        .replace(/lösung|loesung|l=/g, "")
+        .replace(/[()]/g, "")
+        .replace(/\|/g, ";");
     }
-    .pulse-avatar {
-      animation: pulseAvatar 1.8s infinite;
+
+    function numericEqual(a, b) {
+      const na = Number(String(a).replace(",", "."));
+      const nb = Number(String(b).replace(",", "."));
+      return Number.isFinite(na) && Number.isFinite(nb) && Math.abs(na - nb) < 1e-9;
     }
+
+    function parseNumber(raw) {
+      if (raw === undefined || raw === null) return null;
+      let s = String(raw).trim().replace(/−/g, "-").replace(/,/g, ".");
+      if (!s) return null;
+      if (/^-?\d+(\.\d+)?\/\-?\d+(\.\d+)?$/.test(s)) {
+        const [a, b] = s.split("/").map(Number);
+        if (b !== 0) return a / b;
+      }
+      const n = Number(s);
+      return Number.isFinite(n) ? n : null;
+    }
+
+    function parseSolutionInput(raw, vars = ["x", "y"]) {
+      const original = String(raw ?? "").trim();
+      if (!original) return null;
+      let s = original
+        .replace(/−/g, "-")
+        .replace(/,/g, ".")
+        .replace(/\s+/g, "")
+        .replace(/\|/g, ";")
+        .replace(/[{}\[\]()]/g, "")
+        .toLowerCase();
+
+      const result = {};
+      for (const v of vars) {
+        const re = new RegExp(`${v}\\s*=\\s*(-?\\d+(?:[.,]\\d+)?(?:\\/-?\\d+(?:[.,]\\d+)?)?)`, "i");
+        const match = original.replace(/−/g, "-").match(re);
+        if (match) result[v] = parseNumber(match[1]);
+      }
+      if (vars.every(v => typeof result[v] === "number")) return result;
+
+      const numbers = s.match(/-?\d+(?:\.\d+)?(?:\/-?\d+(?:\.\d+)?)?/g)?.map(parseNumber).filter(n => typeof n === "number") || [];
+      if (numbers.length >= vars.length) {
+        const byOrder = {};
+        vars.forEach((v, i) => byOrder[v] = numbers[i]);
+        return byOrder;
+      }
+      return null;
+    }
+
+    function checkSolutionInput(raw, solution) {
+      if (!solution) return false;
+      if (solution.acceptedText) {
+        return solution.acceptedText.map(normalizeText).includes(normalizeText(raw));
+      }
+      const vars = Object.keys(solution.vars || {});
+      const parsed = parseSolutionInput(raw, vars);
+      if (!parsed) return false;
+      return vars.every(v => numericEqual(parsed[v], solution.vars[v]));
+    }
+
+    function checkClozeValue(raw, accepted) {
+      return accepted.some(a => {
+        if (String(a).trim() === "") return String(raw ?? "").trim() === "" || normalizeText(raw) === "1";
+        const na = parseNumber(raw);
+        const nb = parseNumber(a);
+        if (na !== null && nb !== null) return numericEqual(na, nb);
+        return normalizeText(raw) === normalizeText(a);
+      });
+    }
+
+    function sameSet(a, b) { return a.length === b.length && a.every(x => b.includes(x)); }
+    function sameOrder(a, b) { return a.length === b.length && a.every((x, i) => x === b[i]); }
+
+    function formatParts(text) {
+      const parts = String(text).split(/(\*\*.*?\*\*|\$.*?\$)/g);
+      return parts.map((part, i) => {
+        if (part.startsWith("**") && part.endsWith("**")) return <span key={i} className="font-black text-sky-700">{part.slice(2, -2)}</span>;
+        if (part.startsWith("$") && part.endsWith("$")) return <span key={i} className="mx-1 rounded-lg bg-slate-100 px-2 py-0.5 font-mono text-slate-900">{part.slice(1, -1)}</span>;
+        return <React.Fragment key={i}>{part}</React.Fragment>;
+      });
+    }
+
+    const bossQuestions = [
+      { kind: "single", q: "I: x + y = 10, II: x - y = 2. Welche Lösung?", options: ["(6;4)", "(4;6)", "(8;2)", "(5;5)"], answer: "(6;4)", explanation: "Addieren ergibt 2x = 12, also x = 6 und y = 4." },
+      { kind: "single", q: "Bei 3x + 2y = 14 und -3x + y = 1 fällt beim Addieren weg:", options: ["x", "y", "beide", "keine Variable"], answer: "x", explanation: "3x + (-3x) = 0." },
+      { kind: "input", q: "Löse: 2x + y = 11 und -6x + 2y = -18. Gib x und y an.", solution: { vars: { x: 4, y: 3 } }, explanation: "Erste Gleichung mal 3: 6x + 3y = 33. Addieren mit II ergibt 5y = 15." },
+      { kind: "single", q: "Was ist beim Multiplizieren einer Gleichung erlaubt?", options: ["Nur x verändern", "Nur die linke Seite verändern", "Die ganze Gleichung mit derselben Zahl multiplizieren", "Nur die rechte Seite verändern"], answer: "Die ganze Gleichung mit derselben Zahl multiplizieren", explanation: "Die Waage bleibt nur im Gleichgewicht, wenn beide Seiten gleich behandelt werden." },
+      { kind: "input", q: "Löse: -2x + 3y = 5 und 4x + y = 11.", solution: { vars: { x: 2, y: 3 } }, explanation: "Erste Gleichung mal 2 und addieren: 7y = 21." },
+      { kind: "single", q: "x + y = 5 und 2x + 2y = 10 haben ...", options: ["keine Lösung", "genau eine Lösung", "unendlich viele Lösungen", "immer x = 0"], answer: "unendlich viele Lösungen", explanation: "Die zweite Gleichung ist nur das Doppelte der ersten." },
+      { kind: "input", q: "Löse: 5x - 2y = 7 und 3x + 4y = 25.", solution: { vars: { x: 3, y: 4 } }, explanation: "Erste Gleichung mal 2: 10x - 4y = 14. Addieren mit II ergibt 13x = 39." },
+      { kind: "single", q: "Welche Operation beseitigt y bei 2x + 5y = 21 und 7x + 5y = 36?", options: ["Gleichungen addieren", "Gleichungen voneinander subtrahieren", "beide durch 5 teilen", "x und y vertauschen"], answer: "Gleichungen voneinander subtrahieren", explanation: "5y - 5y = 0." },
+      { kind: "input", q: "Löse: 0,5x + y = 7 und x - y = 2.", solution: { vars: { x: 6, y: 4 } }, explanation: "Erste Gleichung mal 2: x + 2y = 14. Mit x - y = 2 ergibt sich y = 4." },
+      { kind: "single", q: "Beim Additionsverfahren ist das Ziel zuerst meistens ...", options: ["beide Variablen gleichzeitig zu berechnen", "eine Variable zu beseitigen", "immer zu zeichnen", "die Gleichungen zu löschen"], answer: "eine Variable zu beseitigen", explanation: "Dann bleibt eine Gleichung mit nur einer Variablen übrig." },
+      { kind: "single", q: "I: 4x + y = 18, II: -4x + 3y = 14. Nach dem Addieren entsteht:", options: ["4y = 32", "0y = 32", "8x + 4y = 32", "4y = -4"], answer: "4y = 32", explanation: "4x und -4x fallen weg; y + 3y = 4y; 18 + 14 = 32." },
+      { kind: "input", q: "Löse: 3x + 2y = 17 und 2x - 3y = -6.", solution: { vars: { x: 3, y: 4 } }, explanation: "I mal 3 und II mal 2: 9x + 6y = 51 und 4x - 6y = -12." }
+    ];
+
+    const LEVELS = [
+      {
+        id: 1, title: "Koordinaten-Tor", subtitle: "Was bedeutet eine Lösung?", icon: "🧭", color: "from-sky-500 to-cyan-400",
+        method: {
+          title: "Bevor gerechnet wird: Was ist überhaupt eine Lösung?",
+          steps: [
+            "Ein lineares Gleichungssystem besteht aus **zwei Bedingungen**, die gleichzeitig gelten müssen.",
+            "Du prüfst ein Zahlenpaar, indem du die Werte für **x** und **y** in beide Gleichungen einsetzt.",
+            "Nur wenn **beide Gleichungen wahr** sind, ist das Zahlenpaar die Lösung. Grafisch ist das der Schnittpunkt der beiden Geraden."
+          ],
+          example: "Beispiel: x + y = 9 und x - y = 3. Für (6;3) gilt 6 + 3 = 9 und 6 - 3 = 3."
+        },
+        steps: [
+          { type: "info", title: "Deine Mission beginnt", text: ["In der Stadt **Additio** öffnen sich Türen nur mit einem passenden Zahlenpaar.", "Ein **lineares Gleichungssystem** besteht aus zwei Gleichungen mit zwei Variablen.", "Eine **Lösung** ist ein Zahlenpaar, das **beide Gleichungen gleichzeitig** wahr macht."] },
+          { type: "task", kind: "single", id: "l1-pair", title: "Zahlenpaar prüfen", difficulty: "Basis", prompt: "Welches Zahlenpaar löst das Gleichungssystem?", equation: "I: x + y = 9     II: x - y = 3", options: ["(6;3)", "(3;6)", "(5;4)", "(4;5)"], answer: "(6;3)", xp: 40, hints: ["Setze jedes Zahlenpaar in beide Gleichungen ein.", "Bei (6;3) gilt: 6 + 3 = 9 und 6 - 3 = 3.", "Das gesuchte Paar muss beide Gleichungen erfüllen, nicht nur eine."], solutionText: "Die Lösung ist (6;3), denn beide Gleichungen stimmen.", explanation: "Ein Zahlenpaar ist nur dann Lösung, wenn es in beiden Gleichungen passt." },
+          { type: "task", kind: "hotspot", id: "l1-hotspot", title: "Schnittpunkt finden", difficulty: "Mittel", prompt: "Die beiden Geraden gehören zu y = 8 - x und y = x + 2. Klicke den Schnittpunkt an.", chart: { points: [{ id: "A", label: "A", x: 1, y: 7 }, { id: "B", label: "B", x: 3, y: 5 }, { id: "C", label: "C", x: 5, y: 3 }, { id: "D", label: "D", x: 4, y: 6 }], lines: [{ from: [0,8], to: [8,0], label: "y = 8 - x" }, { from: [0,2], to: [6,8], label: "y = x + 2" }] }, answer: "B", xp: 55, hints: ["Der Schnittpunkt liegt dort, wo beide Geraden denselben Punkt haben.", "Teste die Punkte: Bei x = 3 gilt y = 8 - 3 = 5 und y = 3 + 2 = 5.", "Der Punkt B hat die Koordinaten (3;5)."], solutionText: "Der Schnittpunkt ist B = (3;5).", explanation: "Beide Gleichungen liefern für x = 3 den y-Wert 5." },
+          { type: "task", kind: "input", id: "l1-input", title: "Lösung eintragen", difficulty: "Basis", prompt: "Löse durch Kopfrechnen und gib das Zahlenpaar an.", equation: "I: x + y = 12     II: x - y = 4", placeholder: "Lösungspaar eingeben", solution: { vars: { x: 8, y: 4 } }, xp: 45, hints: ["Addiere beide Gleichungen im Kopf: y und -y fallen weg.", "x + y + x - y = 12 + 4, also 2x = 16.", "x = 8. Setze in x + y = 12 ein: 8 + y = 12."], solutionText: "x = 8 und y = 4, also (8;4).", explanation: "Schon hier sieht man die Grundidee des Additionsverfahrens: Eine Variable verschwindet." }
+        ]
+      },
+      {
+        id: 2, title: "Werkzeug-Kammer", subtitle: "Vorwissen aktivieren", icon: "🧰", color: "from-indigo-500 to-violet-400",
+        method: {
+          title: "Vom bekannten Verfahren zum neuen Werkzeug",
+          steps: [
+            "Bisher konntest du Gleichungssysteme grafisch, durch Gleichsetzen oder durch Einsetzen lösen.",
+            "Das neue Verfahren nutzt eine andere Idee: Zwei Gleichungen werden so kombiniert, dass **eine Variable verschwindet**.",
+            "Damit das funktioniert, musst du zuerst erkennen, ob gleiche oder entgegengesetzte Koeffizienten vorkommen."
+          ],
+          example: "Bei x + y = 11 und x - y = 3 sind +y und -y entgegengesetzt. Beim Addieren fallen sie weg."
+        },
+        steps: [
+          { type: "info", title: "Du kennst schon zwei Werkzeuge", text: ["Beim **Gleichsetzungsverfahren** werden zwei Terme gleichgesetzt.", "Beim **Einsetzungsverfahren** setzt man einen Term in die andere Gleichung ein.", "Das **Additionsverfahren** ist besonders stark, wenn sich eine Variable durch Addieren oder Subtrahieren beseitigen lässt."] },
+          { type: "task", kind: "sort", id: "l2-sort", title: "Einsetzungsverfahren ordnen", difficulty: "Basis", prompt: "Bringe die Schritte des Einsetzungsverfahrens in die richtige Reihenfolge.", items: ["Eine Gleichung nach einer Variablen auflösen", "Den Term in die andere Gleichung einsetzen", "Die Gleichung mit einer Variablen lösen", "Die zweite Variable berechnen", "Die Probe machen"], answer: ["Eine Gleichung nach einer Variablen auflösen", "Den Term in die andere Gleichung einsetzen", "Die Gleichung mit einer Variablen lösen", "Die zweite Variable berechnen", "Die Probe machen"], xp: 45, hints: ["Überlege: Was muss zuerst passieren, damit du überhaupt einsetzen kannst?", "Erst brauchst du einen Term, dann setzt du diesen Term ein.", "Zum Schluss wird kontrolliert, ob beide Gleichungen erfüllt sind."], solutionText: "Auflösen → Einsetzen → eine Variable lösen → zweite Variable berechnen → Probe.", explanation: "Diese Struktur hilft dir später auch beim Additionsverfahren." },
+          { type: "task", kind: "multiple", id: "l2-goodaddition", title: "Wann lohnt sich Addieren?", difficulty: "Mittel", prompt: "In welchen Situationen ist das Additionsverfahren besonders geschickt?", options: ["Die Koeffizienten einer Variable sind gleich.", "Die Koeffizienten einer Variable sind entgegengesetzt.", "Beide Gleichungen bestehen nur aus einer Zahl.", "Eine Variable kann durch Multiplikation passend gemacht werden."], answer: ["Die Koeffizienten einer Variable sind gleich.", "Die Koeffizienten einer Variable sind entgegengesetzt.", "Eine Variable kann durch Multiplikation passend gemacht werden."], xp: 60, hints: ["Denke an das Ziel: Eine Variable soll verschwinden.", "Gleich bedeutet: Subtrahieren kann helfen. Entgegengesetzt bedeutet: Addieren kann helfen.", "Auch durch Multiplizieren kann man passende Koeffizienten erzeugen."], solutionText: "Richtig sind: gleiche Koeffizienten, entgegengesetzte Koeffizienten und passende Koeffizienten durch Multiplikation.", explanation: "Alle drei Fälle können dazu führen, dass eine Variable wegfällt." },
+          { type: "task", kind: "input", id: "l2-recap", title: "Schneller Vorwissens-Check", difficulty: "Mittel", prompt: "Löse das System mit einem Verfahren deiner Wahl.", equation: "I: y = 2x + 1     II: y = -x + 7", placeholder: "Lösungspaar eingeben", solution: { vars: { x: 2, y: 5 } }, xp: 50, hints: ["Da beide Gleichungen nach y aufgelöst sind, kannst du die rechten Seiten gleichsetzen.", "2x + 1 = -x + 7.", "3x = 6, also x = 2. Danach y berechnen."], solutionText: "x = 2 und y = 5, also (2;5).", explanation: "Dieses Vorwissen brauchst du, um Ergebnisse überprüfen zu können." }
+        ]
+      },
+      {
+        id: 3, title: "Additions-Schleuse", subtitle: "Direkt addieren", icon: "➕", color: "from-cyan-500 to-emerald-400",
+        method: {
+          title: "So funktioniert direktes Addieren",
+          steps: [
+            "Schreibe die Gleichungen untereinander und addiere **linke Seite mit linker Seite** und **rechte Seite mit rechter Seite**.",
+            "Suche entgegengesetzte Terme wie **3x** und **-3x** oder **y** und **-y**. Diese ergeben zusammen 0.",
+            "Danach bleibt eine Gleichung mit nur einer Variablen. Diese löst du und setzt den Wert zurück in eine Ursprungsgleichung."
+          ],
+          example: "3x + 2y = 16 und -3x + y = -1 → addieren: 3y = 15 → y = 5."
+        },
+        steps: [
+          { type: "info", title: "Die Kernidee", text: ["Beim **Additionsverfahren** werden zwei Gleichungen so addiert oder subtrahiert, dass eine Variable wegfällt.", "Wenn zum Beispiel **3x** und **-3x** vorkommen, ergibt das zusammen **0x**.", "Danach löst du die verbleibende Gleichung mit nur einer Variablen."] },
+          { type: "task", kind: "single", id: "l3-add", title: "Was passiert beim Addieren?", difficulty: "Basis", prompt: "Addiere beide Gleichungen. Welche Aussage stimmt?", equation: "I: 3x + 2y = 16     II: -3x + y = -1", options: ["x fällt weg und 3y = 15", "y fällt weg und 6x = 15", "x fällt weg und y = 17", "keine Variable fällt weg"], answer: "x fällt weg und 3y = 15", xp: 50, hints: ["Schaue nur auf die x-Terme: 3x und -3x.", "3x + (-3x) = 0x. Die x-Terme verschwinden.", "2y + y = 3y und 16 + (-1) = 15."], solutionText: "x fällt weg und es entsteht 3y = 15.", explanation: "Entgegengesetzte Koeffizienten heben sich beim Addieren auf." },
+          { type: "task", kind: "cloze", id: "l3-cloze", title: "Lücken im Rechenweg", difficulty: "Basis", prompt: "Fülle die Lücken passend aus.", equation: "I: 2x + y = 11     II: -2x + 3y = 9", clozeText: ["Beim Addieren entsteht ", { id: "a", size: 6 }, " = ", { id: "b", size: 5 }, ". Daher ist y = ", { id: "c", size: 3 }, ". Eingesetzt in I ergibt sich x = ", { id: "d", size: 3 }, "."], answers: { a: ["4y"], b: ["20"], c: ["5"], d: ["3"] }, xp: 65, hints: ["Addiere linke Seite mit linker Seite und rechte Seite mit rechter Seite.", "2x + (-2x) = 0. y + 3y = 4y.", "4y = 20, also y = 5. Danach 2x + 5 = 11."], solutionText: "4y = 20, y = 5, x = 3.", explanation: "Der Rechenweg zeigt die Standardstruktur des Additionsverfahrens." },
+          { type: "task", kind: "input", id: "l3-solve", title: "Selbst lösen", difficulty: "Mittel", prompt: "Löse mit dem Additionsverfahren.", equation: "I: x + y = 11     II: x - y = 3", placeholder: "Lösungspaar eingeben", solution: { vars: { x: 7, y: 4 } }, xp: 60, hints: ["Addiere die Gleichungen, weil y und -y entgegengesetzt sind.", "Es entsteht 2x = 14.", "x = 7. Setze in x + y = 11 ein."], solutionText: "x = 7 und y = 4, also (7;4).", explanation: "Hier funktioniert das Additionsverfahren ohne vorheriges Multiplizieren." }
+        ]
+      },
+      {
+        id: 4, title: "Subtraktions-Brücke", subtitle: "Gleiche Koeffizienten nutzen", icon: "➖", color: "from-emerald-500 to-lime-400",
+        method: {
+          title: "Wann du subtrahierst statt addierst",
+          steps: [
+            "Wenn eine Variable in beiden Gleichungen **denselben Koeffizienten** hat, verschwindet sie beim Subtrahieren.",
+            "Du rechnest dann zum Beispiel Gleichung II minus Gleichung I: Jeder Term der ersten Gleichung wird abgezogen.",
+            "Achte besonders auf Vorzeichen und subtrahiere auch die rechte Seite."
+          ],
+          example: "2x + 5y = 21 und 7x + 5y = 36 → II - I: 5x = 15 → x = 3."
+        },
+        steps: [
+          { type: "info", title: "Manchmal hilft Subtrahieren", text: ["Wenn eine Variable in beiden Gleichungen denselben Koeffizienten hat, kann man die Gleichungen **subtrahieren**.", "Beispiel: **5y - 5y = 0**.", "Auch Subtrahieren ist erlaubt, weil du wieder beide Seiten der Gleichungen gleich behandelst."] },
+          { type: "task", kind: "single", id: "l4-subtract", title: "Operation wählen", difficulty: "Basis", prompt: "Welche Operation beseitigt y am schnellsten?", equation: "I: 2x + 5y = 21     II: 7x + 5y = 36", options: ["I + II", "II - I", "I · 5", "x und y vertauschen"], answer: "II - I", xp: 50, hints: ["Die y-Terme sind gleich: 5y und 5y.", "Beim Addieren entsteht 10y. Beim Subtrahieren entsteht 0y.", "II - I ergibt 5x = 15."], solutionText: "II - I ist geschickt. Dann gilt 5x = 15.", explanation: "Gleiche Koeffizienten werden durch Subtrahieren beseitigt." },
+          { type: "task", kind: "matching", id: "l4-match", title: "Passende Strategie zuordnen", difficulty: "Mittel", prompt: "Ordne jedem System die passende erste Operation zu.", items: [{ id: "A", left: "A: x + 2y = 8 und -x + y = 1" }, { id: "B", left: "B: 3x + y = 10 und 3x - 2y = 1" }, { id: "C", left: "C: x + 4y = 9 und 2x - 3y = 4" }], choices: ["addieren", "subtrahieren", "erst eine Gleichung multiplizieren"], answer: { A: "addieren", B: "subtrahieren", C: "erst eine Gleichung multiplizieren" }, xp: 70, hints: ["Suche gleiche oder entgegengesetzte Koeffizienten.", "Bei A sind x und -x entgegengesetzt. Bei B sind 3x und 3x gleich.", "Bei C passt noch nichts direkt, also muss vorher multipliziert werden."], solutionText: "A: addieren, B: subtrahieren, C: erst multiplizieren.", explanation: "Die Strategie hängt von den Koeffizienten ab." },
+          { type: "task", kind: "input", id: "l4-solve", title: "Brücke überqueren", difficulty: "Mittel", prompt: "Löse das System.", equation: "I: 2x + 5y = 21     II: 7x + 5y = 36", placeholder: "Lösungspaar eingeben", solution: { vars: { x: 3, y: 3 } }, xp: 65, hints: ["Subtrahiere I von II.", "7x - 2x = 5x und 36 - 21 = 15.", "x = 3. Setze in I ein: 6 + 5y = 21."], solutionText: "x = 3 und y = 3, also (3;3).", explanation: "Nach dem Subtrahieren bleibt zuerst nur x übrig." }
+        ]
+      },
+      {
+        id: 5, title: "Faktoren-Labor", subtitle: "Gleichungen passend machen", icon: "⚗️", color: "from-amber-500 to-orange-400",
+        method: {
+          title: "Wenn noch nichts wegfällt: passend multiplizieren",
+          steps: [
+            "Manchmal sind die Koeffizienten noch nicht gleich oder entgegengesetzt. Dann machst du sie passend.",
+            "Du darfst eine **ganze Gleichung** mit derselben Zahl multiplizieren. Dabei werden alle Terme und die rechte Seite multipliziert.",
+            "Danach addierst oder subtrahierst du wie vorher."
+          ],
+          example: "2x + y = 11 und -6x + 2y = -18. Erste Gleichung · 3: 6x + 3y = 33. Jetzt fällt x beim Addieren weg."
+        },
+        steps: [
+          { type: "info", title: "Jetzt wird verstärkt", text: ["Oft passen die Koeffizienten noch nicht direkt.", "Dann multiplizierst du **eine ganze Gleichung** mit einer Zahl.", "Wichtig: Jeder Term und auch die rechte Seite müssen mitmultipliziert werden."] },
+          { type: "task", kind: "single", id: "l5-factor", title: "Faktor wählen", difficulty: "Mittel", prompt: "Mit welchem Faktor sollte Gleichung I multipliziert werden, damit x beim Addieren wegfällt?", equation: "I: 2x + y = 11     II: -6x + 2y = -18", graphic: "balance", options: ["2", "3", "-3", "6"], answer: "3", xp: 60, hints: ["Du möchtest aus 2x ein 6x machen, weil in II -6x steht.", "2x · 3 = 6x.", "Danach ergibt 6x + (-6x) = 0."], solutionText: "Gleichung I wird mit 3 multipliziert.", explanation: "Dadurch entstehen entgegengesetzte x-Koeffizienten." },
+          { type: "task", kind: "cloze", id: "l5-transform", title: "Ganze Gleichung multiplizieren", difficulty: "Basis", prompt: "Multipliziere die gesamte Gleichung mit 3.", equation: "2x + y = 11  | · 3", clozeText: [{ id: "a", size: 4 }, "x + ", { id: "b", size: 4 }, "y = ", { id: "c", size: 4 }], answers: { a: ["6"], b: ["3"], c: ["33"] }, xp: 55, hints: ["Jeder Term wird mit 3 multipliziert.", "2x · 3 = 6x und y · 3 = 3y.", "Auch 11 wird mit 3 multipliziert."], solutionText: "6x + 3y = 33.", explanation: "Das ist ein häufiger Fehler: Die rechte Seite darf nicht vergessen werden." },
+          { type: "task", kind: "input", id: "l5-solve", title: "Laborprüfung", difficulty: "Mittel", prompt: "Löse das System.", equation: "I: 2x + y = 11     II: -6x + 2y = -18", placeholder: "Lösungspaar eingeben", solution: { vars: { x: 4, y: 3 } }, xp: 75, hints: ["Multipliziere I mit 3.", "Dann hast du 6x + 3y = 33 und -6x + 2y = -18.", "Addiere: 5y = 15, also y = 3. Danach x berechnen."], solutionText: "x = 4 und y = 3, also (4;3).", explanation: "Durch den Faktor 3 konnte x beseitigt werden." },
+          { type: "task", kind: "dragdrop", id: "l5-drag", title: "Direkt oder erst multiplizieren?", difficulty: "Mittel", prompt: "Ordne die Systeme zu. Tippe erst eine Karte und dann einen Bereich an. Am Desktop kannst du auch ziehen.", bins: ["Direkt möglich", "Erst multiplizieren"], cards: [{ id: "a", text: "x + 2y = 5 / -x + y = 1" }, { id: "b", text: "2x + y = 7 / -6x + 3y = -9" }, { id: "c", text: "4x + 5y = 10 / 4x - y = 2" }, { id: "d", text: "3x + 2y = 11 / x - y = 1" }], answer: { a: "Direkt möglich", b: "Erst multiplizieren", c: "Direkt möglich", d: "Erst multiplizieren" }, xp: 75, hints: ["Direkt möglich heißt: gleiche oder entgegengesetzte Koeffizienten sind schon vorhanden.", "Bei a sind x und -x entgegengesetzt. Bei c sind 4x und 4x gleich.", "Bei b und d müssen Koeffizienten erst passend gemacht werden."], solutionText: "Direkt möglich: a und c. Erst multiplizieren: b und d.", explanation: "Diese Entscheidung ist der wichtigste Planungsschritt." }
+        ]
+      },
+      {
+        id: 6, title: "Strategie-Turm", subtitle: "Clever entscheiden", icon: "🏰", color: "from-purple-500 to-pink-400",
+        method: {
+          title: "Strategie vor Rechnung",
+          steps: [
+            "Schau zuerst auf die Zahlen vor x und y. Diese Zahlen heißen **Koeffizienten**.",
+            "Wähle die Variable, bei der du mit möglichst kleinen Faktoren gleiche oder entgegengesetzte Koeffizienten erzeugen kannst.",
+            "Wenn nötig, multiplizierst du **beide Gleichungen**, damit eine Variable beim Addieren verschwindet."
+          ],
+          example: "3x + 2y = 17 und 2x - 3y = -6. Für y passen die Faktoren 3 und 2: +6y und -6y."
+        },
+        steps: [
+          { type: "info", title: "Nicht blind rechnen", text: ["Gute Rechnerinnen und Rechner wählen zuerst eine **günstige Variable**.", "Günstig ist oft die Variable, bei der kleine Faktoren entstehen.", "Manchmal müssen auch **beide Gleichungen** multipliziert werden."] },
+          { type: "task", kind: "matching", id: "l6-target", title: "Variable auswählen", difficulty: "Mittel", prompt: "Welche Variable würdest du zuerst beseitigen?", items: [{ id: "A", left: "A: 4x + 3y = 11 und 2x - 5y = -3" }, { id: "B", left: "B: 7x + 2y = 23 und 3x - 2y = 1" }, { id: "C", left: "C: 2x + 5y = 13 und 3x + 10y = 24" }], choices: ["x", "y"], answer: { A: "x", B: "y", C: "y" }, xp: 75, hints: ["Suche nach gleichen, entgegengesetzten oder leicht herstellbaren Koeffizienten.", "Bei B sind 2y und -2y schon entgegengesetzt.", "Bei C kann 5y durch Multiplikation mit 2 zu 10y werden."], solutionText: "A: x, B: y, C: y.", explanation: "Strategisches Planen spart Rechenschritte." },
+          { type: "task", kind: "multiple", id: "l6-allowed", title: "Erlaubte Schritte", difficulty: "Basis", prompt: "Welche Schritte sind beim Additionsverfahren erlaubt?", options: ["Eine ganze Gleichung mit einer Zahl ungleich 0 multiplizieren.", "Nur den x-Koeffizienten verändern.", "Linke Seiten addieren und rechte Seiten addieren.", "Eine Gleichung von der anderen subtrahieren.", "Die rechte Seite weglassen, wenn sie stört."], answer: ["Eine ganze Gleichung mit einer Zahl ungleich 0 multiplizieren.", "Linke Seiten addieren und rechte Seiten addieren.", "Eine Gleichung von der anderen subtrahieren."], xp: 55, hints: ["Erlaubt ist, was die Gleichungen äquivalent hält.", "Einzelne Terme darf man nicht einfach verändern.", "Die rechte Seite gehört immer zur Gleichung."], solutionText: "Erlaubt: ganze Gleichung multiplizieren, Gleichungen addieren, Gleichungen subtrahieren.", explanation: "Das Gleichgewicht muss immer erhalten bleiben." },
+          { type: "task", kind: "input", id: "l6-both", title: "Beide Gleichungen multiplizieren", difficulty: "Profi", prompt: "Löse das System. Tipp: Beide Gleichungen können passend gemacht werden.", equation: "I: 3x + 2y = 17     II: 2x - 3y = -6", placeholder: "Lösungspaar eingeben", solution: { vars: { x: 3, y: 4 } }, xp: 95, hints: ["Überlege, ob du y beseitigen kannst.", "Multipliziere I mit 3 und II mit 2.", "Dann entstehen 9x + 6y = 51 und 4x - 6y = -12. Addiere."], solutionText: "x = 3 und y = 4, also (3;4).", explanation: "Durch die Faktoren 3 und 2 entstehen +6y und -6y." }
+        ]
+      },
+      {
+        id: 7, title: "Textaufgaben-Markt", subtitle: "Aus Situationen Gleichungen bauen", icon: "🎟️", color: "from-rose-500 to-orange-400",
+        method: {
+          title: "Vom Text zum Gleichungssystem",
+          steps: [
+            "Lege zuerst fest, wofür die Variablen stehen, zum Beispiel t = Ticketpreis und p = Popcornpreis.",
+            "Übersetze jede Information in eine eigene Gleichung. Die Anzahl vor einem Gegenstand wird zum Koeffizienten.",
+            "Löse danach das entstandene Gleichungssystem und schreibe einen Antwortsatz mit Einheit."
+          ],
+          example: "2 Tickets und 3 Popcorn kosten 27 € → 2t + 3p = 27."
+        },
+        steps: [
+          { type: "info", title: "Aus Geschichten werden Gleichungen", text: ["Bei Textaufgaben legst du zuerst fest, wofür **x** und **y** stehen.", "Danach übersetzt du jede Information in eine Gleichung.", "Erst dann rechnest du mit dem Additionsverfahren."] },
+          { type: "task", kind: "single", id: "l7-system", title: "System aufstellen", difficulty: "Mittel", prompt: "Kinotickets kosten t Euro, Popcorn kostet p Euro. 2 Tickets und 3 Popcorn kosten 27 €. 4 Tickets und 1 Popcorn kosten 29 €. Welches System passt?", graphic: "tickets", options: ["2t + 3p = 27 und 4t + p = 29", "3t + 2p = 27 und t + 4p = 29", "2t - 3p = 27 und 4t - p = 29", "t + p = 27 und t + p = 29"], answer: "2t + 3p = 27 und 4t + p = 29", xp: 65, hints: ["Die Anzahl vor dem Gegenstand wird zum Koeffizienten.", "2 Tickets und 3 Popcorn bedeutet 2t + 3p.", "4 Tickets und 1 Popcorn bedeutet 4t + p."], solutionText: "2t + 3p = 27 und 4t + p = 29.", explanation: "Jede Einkaufssituation wird zu einer eigenen Gleichung." },
+          { type: "task", kind: "input", id: "l7-solve", title: "Marktpreis berechnen", difficulty: "Mittel", prompt: "Berechne die Preise für Ticket und Popcorn.", equation: "I: 2t + 3p = 27     II: 4t + p = 29", placeholder: "Preise eingeben", solution: { vars: { t: 6, p: 5 } }, xp: 80, hints: ["Multipliziere II mit 3 oder I mit 2, damit p oder t passend wird.", "Zum Beispiel: II · 3 ergibt 12t + 3p = 87. Subtrahiere I.", "10t = 60, also t = 6. Danach p berechnen."], solutionText: "Ein Ticket kostet 6 €, Popcorn kostet 5 €.", explanation: "Die Probe: 2·6 + 3·5 = 27 und 4·6 + 5 = 29." },
+          { type: "worksheet", id: "l7-worksheet", title: "Arbeitsblatt-Phase", duration: 15, prompt: "Bearbeite auf deinem Arbeitsblatt eine eigene kleine Textaufgabe. Markiere zuerst die Variablen und stelle dann zwei Gleichungen auf.", checklist: ["Ich habe klar festgelegt, wofür die Variablen stehen.", "Ich habe zwei Informationen in zwei Gleichungen übersetzt.", "Ich habe notiert, welche Variable ich zuerst beseitigen möchte."] },
+          { type: "task", kind: "reorder", id: "l7-reorder", title: "Textaufgabe strukturieren", difficulty: "Basis", prompt: "Ordne den Lösungsweg für Textaufgaben.", items: ["Variablen festlegen", "Informationen in zwei Gleichungen übersetzen", "Additionsverfahren planen", "Gleichungssystem lösen", "Antwortsatz mit Einheit schreiben"], answer: ["Variablen festlegen", "Informationen in zwei Gleichungen übersetzen", "Additionsverfahren planen", "Gleichungssystem lösen", "Antwortsatz mit Einheit schreiben"], xp: 50, hints: ["Ohne Variablen weiß man nicht, wofür gerechnet wird.", "Erst aufstellen, dann lösen.", "Der Antwortsatz kommt am Ende, weil er das Ergebnis erklärt."], solutionText: "Variablen → Gleichungen → Plan → Lösen → Antwortsatz.", explanation: "Diese Reihenfolge verhindert typische Fehler bei Textaufgaben." }
+        ]
+      },
+      {
+        id: 8, title: "Profi-Pfade", subtitle: "Negative Zahlen, Brüche und Dezimalzahlen", icon: "🧗", color: "from-fuchsia-500 to-violet-500",
+        method: {
+          title: "Das Verfahren bleibt gleich – nur die Zahlen werden schwieriger",
+          steps: [
+            "Bei negativen Zahlen musst du besonders sorgfältig auf Vorzeichen achten.",
+            "Brüche oder Dezimalzahlen kannst du oft beseitigen, indem du die ganze Gleichung mit einer passenden Zahl multiplizierst.",
+            "Danach verwendest du dieselbe Routine: passend machen, addieren oder subtrahieren, einsetzen, Probe."
+          ],
+          example: "0,5x + y = 7 wird durch · 2 zu x + 2y = 14. Das ist meist einfacher zu rechnen."
+        },
+        steps: [
+          { type: "info", title: "Anspruchsvoll, aber machbar", text: ["Das Verfahren bleibt gleich, auch wenn negative Zahlen, Brüche oder Dezimalzahlen vorkommen.", "Du darfst Gleichungen zuerst umformen, damit sie übersichtlicher werden.", "Besonders wichtig ist sauberes Rechnen mit Vorzeichen."] },
+          { type: "task", kind: "input", id: "l8-negative", title: "Vorzeichen im Griff", difficulty: "Mittel", prompt: "Löse das System.", equation: "I: -2x + 3y = 5     II: 4x + y = 11", placeholder: "Lösungspaar eingeben", solution: { vars: { x: 2, y: 3 } }, xp: 85, hints: ["Multipliziere I mit 2, damit -4x entsteht.", "Dann hast du -4x + 6y = 10 und 4x + y = 11.", "Addiere: 7y = 21."], solutionText: "x = 2 und y = 3, also (2;3).", explanation: "Die entgegengesetzten x-Terme heben sich auf." },
+          { type: "task", kind: "input", id: "l8-decimal", title: "Dezimalzahlen entschärfen", difficulty: "Profi", prompt: "Löse das System. Du darfst zuerst mit 2 multiplizieren.", equation: "I: 0,5x + y = 7     II: x - y = 2", placeholder: "Lösungspaar eingeben", solution: { vars: { x: 6, y: 4 } }, xp: 95, hints: ["Multipliziere I mit 2, damit 0,5x verschwindet.", "Dann gilt x + 2y = 14 und x - y = 2.", "Subtrahiere II von der neuen Gleichung: 3y = 12."], solutionText: "x = 6 und y = 4, also (6;4).", explanation: "Durch das Multiplizieren wird aus 0,5x ein ganzer x-Term." },
+          { type: "task", kind: "cloze", id: "l8-fraction", title: "Brüche entfernen", difficulty: "Mittel", prompt: "Multipliziere die erste Gleichung mit 2.", equation: "I: 1/2x + y = 8     II: x - y = 1", clozeText: ["Aus I wird ", { id: "a", size: 4 }, "x + ", { id: "b", size: 4 }, "y = ", { id: "c", size: 4 }, "."], answers: { a: ["1", ""], b: ["2"], c: ["16"] }, xp: 60, hints: ["1/2x mal 2 ergibt x.", "y mal 2 ergibt 2y.", "8 mal 2 ergibt 16."], solutionText: "Aus I wird x + 2y = 16.", explanation: "Brüche zu entfernen macht das Additionsverfahren übersichtlicher." }
+        ]
+      },
+      {
+        id: 9, title: "Fehler-Detektor", subtitle: "Denkfehler erkennen", icon: "🕵️", color: "from-red-500 to-rose-400",
+        method: {
+          title: "Fehler finden und besondere Fälle erkennen",
+          steps: [
+            "Kontrolliere bei jedem Schritt, ob linke und rechte Seite gleich behandelt wurden.",
+            "Wenn beim Kombinieren **0 = 0** entsteht, beschreiben beide Gleichungen dieselbe Gerade: unendlich viele Lösungen.",
+            "Wenn **0 = eine falsche Zahl** entsteht, gibt es keine Lösung. Dann sind die Geraden parallel."
+          ],
+          example: "x + y = 4 und 2x + 2y = 10 → I · (-2), dann addieren: 0 = 2. Das ist unmöglich, also keine Lösung."
+        },
+        steps: [
+          { type: "info", title: "Fehler sind Hinweise", text: ["Beim Additionsverfahren passieren typische Fehler: Vorzeichen, rechte Seite vergessen oder nur einen Term multiplizieren.", "Eine **Probe** deckt viele Fehler sofort auf.", "Manchmal zeigt das Verfahren auch: Es gibt **keine** oder **unendlich viele** Lösungen."] },
+          { type: "task", kind: "error", id: "l9-error", title: "Fehleranalyse", difficulty: "Mittel", prompt: "Eine Schülerin rechnet: I: 2x + 3y = 12, II: -2x + y = 4. Sie addiert und schreibt 4y = 8. Wo liegt der Fehler?", options: ["Sie hat die rechten Seiten falsch addiert.", "Sie hätte subtrahieren müssen.", "2x und -2x dürfen nicht wegfallen.", "3y + y ergibt 3y."], answer: "Sie hat die rechten Seiten falsch addiert.", xp: 75, hints: ["Die x-Terme dürfen tatsächlich wegfallen.", "Prüfe die rechte Seite: 12 + 4.", "12 + 4 ist 16, nicht 8."], solutionText: "Richtig wäre: 4y = 16, also y = 4.", explanation: "Die rechte Seite muss genauso addiert werden wie die linke Seite." },
+          { type: "task", kind: "matching", id: "l9-special", title: "Besondere Lösungsfälle", difficulty: "Profi", prompt: "Ordne zu.", items: [{ id: "A", left: "A: x + y = 5 und 2x + 2y = 10" }, { id: "B", left: "B: x + y = 5 und 2x + 2y = 12" }, { id: "C", left: "C: x + y = 5 und x - y = 1" }], choices: ["genau eine Lösung", "keine Lösung", "unendlich viele Lösungen"], answer: { A: "unendlich viele Lösungen", B: "keine Lösung", C: "genau eine Lösung" }, xp: 90, hints: ["Vergleiche, ob eine Gleichung ein Vielfaches der anderen ist.", "A beschreibt dieselbe Gerade zweimal. B beschreibt parallele Geraden.", "C liefert durch Addieren 2x = 6."], solutionText: "A: unendlich viele, B: keine, C: genau eine Lösung.", explanation: "Wenn beim Rechnen 0 = 0 entsteht, gibt es unendlich viele Lösungen. Wenn 0 = falsche Zahl entsteht, gibt es keine." },
+          { type: "task", kind: "reorder", id: "l9-no", title: "Keine Lösung nachweisen", difficulty: "Profi", prompt: "Ordne die Schritte, um zu zeigen, dass das System keine Lösung hat.", equation: "I: x + y = 4     II: 2x + 2y = 10", items: ["I mit -2 multiplizieren: -2x - 2y = -8", "Mit II addieren: 0 = 2", "Widerspruch erkennen", "L = ∅ notieren"], answer: ["I mit -2 multiplizieren: -2x - 2y = -8", "Mit II addieren: 0 = 2", "Widerspruch erkennen", "L = ∅ notieren"], xp: 80, hints: ["Zuerst müssen die Terme passend gemacht werden.", "Danach verschwinden beide Variablen.", "0 = 2 kann niemals stimmen."], solutionText: "I · (-2) → addieren → 0 = 2 → keine Lösung.", explanation: "Ein Widerspruch bedeutet: Es gibt kein Zahlenpaar, das beide Gleichungen erfüllt." }
+        ]
+      },
+      {
+        id: 10, title: "Meisterkammer", subtitle: "Das vollständige Verfahren", icon: "🏆", color: "from-yellow-500 to-amber-300",
+        method: {
+          title: "Der vollständige Additions-Algorithmus",
+          steps: [
+            "1. Entscheide, welche Variable du beseitigen willst.",
+            "2. Multipliziere eine oder beide Gleichungen, falls die Koeffizienten noch nicht passen.",
+            "3. Addiere oder subtrahiere, löse die entstandene Gleichung, setze zurück ein und kontrolliere mit der Probe."
+          ],
+          example: "5x - 2y = 7 und 3x + 4y = 25. Erste Gleichung · 2: 10x - 4y = 14. Addieren: 13x = 39."
+        },
+        steps: [
+          { type: "info", title: "Dein Algorithmus", text: ["1. Prüfe, welche Variable sich günstig beseitigen lässt.", "2. Multipliziere bei Bedarf eine oder beide Gleichungen.", "3. Addiere oder subtrahiere, berechne beide Variablen und mache die Probe."] },
+          { type: "task", kind: "reorder", id: "l10-algorithm", title: "Algorithmus sortieren", difficulty: "Basis", prompt: "Bringe den vollständigen Lösungsweg in die richtige Reihenfolge.", items: ["Variable zum Beseitigen auswählen", "Gleichungen bei Bedarf multiplizieren", "Addieren oder subtrahieren", "Erste Variable berechnen", "Zweite Variable einsetzen und berechnen", "Probe in beiden Gleichungen durchführen"], answer: ["Variable zum Beseitigen auswählen", "Gleichungen bei Bedarf multiplizieren", "Addieren oder subtrahieren", "Erste Variable berechnen", "Zweite Variable einsetzen und berechnen", "Probe in beiden Gleichungen durchführen"], xp: 60, hints: ["Erst planen, dann rechnen.", "Nach dem Addieren/Subtrahieren erhältst du zunächst nur eine Variable.", "Die Probe ist der Abschluss."], solutionText: "Planen → Multiplizieren → Addieren/Subtrahieren → erste Variable → zweite Variable → Probe.", explanation: "Diese Reihenfolge ist deine sichere Routine." },
+          { type: "task", kind: "input", id: "l10-master", title: "Meisteraufgabe", difficulty: "Profi", prompt: "Löse das System vollständig.", equation: "I: 5x - 2y = 7     II: 3x + 4y = 25", placeholder: "Lösungspaar eingeben", solution: { vars: { x: 3, y: 4 } }, xp: 120, hints: ["Beseitige y. Dazu kannst du I mit 2 multiplizieren.", "2I: 10x - 4y = 14. Addiere mit II.", "13x = 39, also x = 3. Danach y berechnen."], solutionText: "x = 3 und y = 4, also (3;4).", explanation: "Die Probe bestätigt: 15 - 8 = 7 und 9 + 16 = 25." },
+          { type: "task", kind: "mini", id: "l10-minicode", title: "Code-Schloss", difficulty: "Mittel", prompt: "Welcher erste Schritt öffnet das Schloss?", equation: "I: 4x + y = 18     II: -4x + 3y = 14", options: ["Gleichungen addieren", "Gleichungen subtrahieren", "I mit 4 multiplizieren", "II durch 3 teilen"], answer: "Gleichungen addieren", xp: 70, hints: ["Achte auf 4x und -4x.", "Entgegengesetzte Koeffizienten werden durch Addieren beseitigt.", "Dann entsteht 4y = 32."], solutionText: "Gleichungen addieren. Dann gilt 4y = 32.", explanation: "Das Schloss öffnet sich, weil x sofort wegfällt." }
+        ]
+      }
+    ];
+
+
+    const LEVEL_EXAMPLES = {
+      1: {
+        example: `Prüfen eines Zahlenpaares:
+
+I:  x + y = 9
+II: x - y = 3
+
+Für (6;3):
+I:  6 + 3 = 9  ✓
+II: 6 - 3 = 3  ✓
+
+Also ist (6;3) eine Lösung.`,
+        notation: `Probe mit einem Zahlenpaar:
+I:  x + y = 9
+    6 + 3 = 9  ✓
+
+II: x - y = 3
+    6 - 3 = 3  ✓`
+      },
+      2: {
+        example: `Vom bekannten Weg zum Additionsverfahren:
+
+I:  x + y = 11
+II: x - y =  3
+
+Idee: +y und -y können sich beim Addieren aufheben.
+Noch nicht rechnen, sondern zuerst erkennen:
+y + (-y) = 0`,
+        notation: `Koeffizienten ansehen:
+I:  x + y = 11
+II: x - y =  3
+
+Bei y stehen die Koeffizienten +1 und -1.
+Sie sind entgegengesetzt.`
+      },
+      3: {
+        example: `Direktes Addieren:
+
+I:   3x + 2y = 16
+II: -3x +  y = -1
+-------------------
+          3y = 15
+      ⇔    y = 5`,
+        notation: `Gleichheitszeichen untereinander:
+I:   3x + 2y = 16
+II: -3x +  y = -1
+-------------------
+          3y = 15
+      ⇔    y = 5`
+      },
+      4: {
+        example: `Subtrahieren bei gleichen Koeffizienten:
+
+II: 7x + 5y = 36
+I:  2x + 5y = 21
+-----------------  II - I
+    5x      = 15
+⇔    x      =  3`,
+        notation: `Bei einer Subtraktion jeden Term abziehen:
+(7x + 5y) - (2x + 5y) = 36 - 21
+⇔ 5x = 15
+⇔  x = 3`
+      },
+      5: {
+        example: `Gleichung passend machen:
+
+I:  2x +  y = 11    | · 3
+⇔   6x + 3y = 33
+
+II: -6x + 2y = -18
+
+Jetzt sind 6x und -6x entgegengesetzt.`,
+        notation: `Wichtig beim Multiplizieren:
+2x + y = 11    | · 3
+⇔ 6x + 3y = 33
+
+Alle Terme und die rechte Seite werden multipliziert.`
+      },
+      6: {
+        example: `Strategisch planen:
+
+I:  3x + 2y = 17
+II: 2x - 3y = -6
+
+Für y:
+I · 3  →  +6y
+II · 2 →  -6y
+
+Dann kann y beim Addieren wegfallen.`,
+        notation: `Plan vor Rechnung:
+kgV von 2 und 3 ist 6.
+I:  3x + 2y = 17    | · 3
+II: 2x - 3y = -6    | · 2`
+      },
+      7: {
+        example: `Text in Gleichungen übersetzen:
+
+t = Ticketpreis
+p = Popcornpreis
+
+2 Tickets und 3 Popcorn kosten 27 €:
+2t + 3p = 27
+
+4 Tickets und 1 Popcorn kosten 29 €:
+4t + p = 29`,
+        notation: `Variablen zuerst festlegen:
+t = Preis für ein Ticket
+p = Preis für ein Popcorn
+
+Dann erst Gleichungen aufstellen.`
+      },
+      8: {
+        example: `Dezimalzahl beseitigen:
+
+I:  0,5x + y = 7    | · 2
+⇔      x + 2y = 14
+
+II:     x -  y = 2
+
+Jetzt kann man gut weiterrechnen.`,
+        notation: `Mit Brüchen oder Dezimalzahlen:
+0,5x + y = 7    | · 2
+⇔   x + 2y = 14`
+      },
+      9: {
+        example: `Besonderer Fall: keine Lösung
+
+I:  x + y = 4      | · (-2)
+⇔  -2x - 2y = -8
+
+II: 2x + 2y = 10
+-----------------
+          0 = 2
+
+Widerspruch: keine Lösung.`,
+        notation: `Wenn 0 = falsche Zahl entsteht:
+0 = 2  ✗
+
+Dann gibt es kein Zahlenpaar, das beide Gleichungen erfüllt.`
+      },
+      10: {
+        example: `Vollständiger Algorithmus:
+
+I:  5x - 2y =  7    | · 2
+⇔  10x - 4y = 14
+
+II: 3x + 4y = 25
+----------------
+   13x      = 39
+⇔    x      =  3`,
+        notation: `Danach einsetzen:
+I: 5x - 2y = 7
+   5·3 - 2y = 7
+⇔ 15 - 2y = 7
+⇔     -2y = -8
+⇔       y = 4`
+      }
+    };
+
+    const TASK_HELP = {
+      "l1-pair": { hints: ["Prüfe zuerst nur, was mit der ersten Gleichung passiert.", "Setze ein Zahlenpaar vollständig in I und II ein. Es reicht nicht, wenn nur eine Gleichung stimmt.", "Bei (6;3) gilt: I: 6 + 3 = 9 und II: 6 - 3 = 3."], workedExample: `I:  x + y = 9
+II: x - y = 3
+
+(6;3) einsetzen:
+I:  6 + 3 = 9  ✓
+II: 6 - 3 = 3  ✓` },
+      "l1-hotspot": { hints: ["Suche den Punkt, an dem sich die beiden Geraden schneiden.", "Lies die Koordinaten der markierten Punkte ab und prüfe sie in beiden Gleichungen.", "Für Punkt B gilt x = 3 und y = 5. Dann ist 8 - 3 = 5 und 3 + 2 = 5."], workedExample: `Punkt B = (3;5)
+y = 8 - x  →  5 = 8 - 3  ✓
+y = x + 2  →  5 = 3 + 2  ✓` },
+      "l1-input": { hints: ["Achte auf die Terme +y und -y.", "Wenn du beide Gleichungen addierst, verschwindet y.", "I + II: 2x = 16, also x = 8. Dann in I einsetzen: 8 + y = 12."], workedExample: `I:  x + y = 12
+II: x - y =  4
+--------------
+   2x     = 16
+⇔   x     =  8
+
+Einsetzen in I:
+8 + y = 12
+⇔   y = 4` },
+      "l2-sort": { hints: ["Überlege, was du brauchst, bevor du einsetzen kannst.", "Zuerst muss eine Gleichung nach einer Variablen aufgelöst werden.", "Danach setzt du den Term ein, löst eine Variable, berechnest die zweite Variable und machst die Probe."], workedExample: `1. Eine Gleichung nach einer Variablen auflösen
+2. Term in die andere Gleichung einsetzen
+3. Eine Variable berechnen
+4. Zweite Variable berechnen
+5. Probe` },
+      "l2-goodaddition": { hints: ["Denke an das Ziel: Eine Variable soll verschwinden.", "Gleiche Koeffizienten helfen beim Subtrahieren; entgegengesetzte beim Addieren.", "Auch wenn noch nichts passt, kann man durch Multiplizieren passende Koeffizienten erzeugen."], workedExample: `Beispiele:
++3x und -3x → Addieren
++5y und +5y → Subtrahieren
+2x und -6x → erst eine Gleichung mit 3 multiplizieren` },
+      "l2-recap": { hints: ["Beide Gleichungen sind schon nach y aufgelöst.", "Setze die rechten Seiten gleich.", "2x + 1 = -x + 7 ⇔ 3x = 6 ⇔ x = 2. Danach y berechnen."], workedExample: `y = 2x + 1
+y = -x + 7
+
+2x + 1 = -x + 7
+⇔ 3x = 6
+⇔  x = 2
+
+Einsetzen:
+y = 2·2 + 1 = 5` },
+      "l3-add": { hints: ["Vergleiche zuerst nur die x-Terme.", "3x und -3x sind entgegengesetzt und ergeben zusammen 0.", "Beim Addieren entsteht: 3y = 15."], workedExample: `I:   3x + 2y = 16
+II: -3x +  y = -1
+-------------------
+          3y = 15` },
+      "l3-cloze": { hints: ["Addiere zuerst die x-Terme und die y-Terme getrennt.", "2x + (-2x) = 0 und y + 3y = 4y.", "Es entsteht 4y = 20 ⇔ y = 5. Dann 2x + 5 = 11 ⇔ x = 3."], workedExample: `I:   2x +  y = 11
+II: -2x + 3y =  9
+-------------------
+          4y = 20
+      ⇔    y = 5
+
+I: 2x + 5 = 11
+⇔  2x     =  6
+⇔   x     =  3` },
+      "l3-solve": { hints: ["Suche eine Variable, die beim Addieren wegfällt.", "Die y-Terme sind +y und -y.", "I + II: 2x = 14 ⇔ x = 7. Dann in I einsetzen."], workedExample: `I:  x + y = 11
+II: x - y =  3
+--------------
+   2x     = 14
+⇔   x     =  7
+
+I: 7 + y = 11
+⇔     y = 4` },
+      "l4-subtract": { hints: ["Vergleiche die y-Terme.", "Beide Gleichungen enthalten +5y. Gleiche Terme verschwinden beim Subtrahieren.", "II - I ergibt 5x = 15."], workedExample: `II: 7x + 5y = 36
+I:  2x + 5y = 21
+-----------------  II - I
+    5x      = 15` },
+      "l4-match": { hints: ["Prüfe bei jedem System, ob eine Variable schon gleiche oder entgegengesetzte Koeffizienten hat.", "A: x und -x passen zum Addieren. B: 3x und 3x passen zum Subtrahieren.", "C hat noch keine passenden Koeffizienten, also muss zuerst multipliziert werden."], workedExample: `A: x und -x → addieren
+B: 3x und 3x → subtrahieren
+C: noch nichts passt → erst multiplizieren` },
+      "l4-solve": { hints: ["Hier sind die y-Koeffizienten gleich.", "Rechne II - I, damit 5y - 5y = 0 wird.", "II - I: 5x = 15 ⇔ x = 3. Dann in I einsetzen."], workedExample: `II: 7x + 5y = 36
+I:  2x + 5y = 21
+-----------------  II - I
+    5x      = 15
+⇔    x      =  3
+
+I: 2·3 + 5y = 21
+⇔ 6 + 5y = 21
+⇔     5y = 15
+⇔      y = 3` },
+      "l5-factor": { hints: ["Vergleiche die x-Koeffizienten 2 und -6.", "Aus 2x soll ein Term entstehen, der zu -6x passt.", "2x · 3 = 6x. Dann heben sich 6x und -6x beim Addieren auf."], workedExample: `I: 2x + y = 11  | · 3
+⇔  6x + 3y = 33
+
+II: -6x + 2y = -18
+
+6x + (-6x) = 0` },
+      "l5-transform": { hints: ["Multipliziere nicht nur den ersten Term.", "Jeder Term der Gleichung wird mit 3 multipliziert.", "2x·3 = 6x, y·3 = 3y und 11·3 = 33."], workedExample: `2x + y = 11    | · 3
+⇔ 6x + 3y = 33` },
+      "l5-solve": { hints: ["Mache zuerst die x-Koeffizienten passend.", "Multipliziere I mit 3 und addiere dann mit II.", "I·3: 6x + 3y = 33. Addieren mit II ergibt 5y = 15."], workedExample: `I:  2x +  y =  11  | · 3
+⇔   6x + 3y =  33
+II:-6x + 2y = -18
+------------------
+          5y =  15
+      ⇔    y =   3
+
+I: 2x + 3 = 11
+⇔  2x     =  8
+⇔   x     =  4` },
+      "l5-drag": { hints: ["Bei jeder Karte reicht zuerst ein Blick auf die Koeffizienten.", "Direkt möglich: gleiche oder entgegengesetzte Koeffizienten sind schon vorhanden.", "a und c sind direkt möglich; b und d brauchen zuerst eine Multiplikation."], workedExample: `Direkt möglich:
+a: x und -x
+c: 4x und 4x
+
+Erst multiplizieren:
+b: 2x und -6x
+d: 3x und x` },
+      "l6-target": { hints: ["Suche die Variable, bei der du die kleinsten passenden Zahlen erzeugen kannst.", "Bei B ist y schon mit +2 und -2 passend. Bei C sind 5y und 10y leicht passend zu machen.", "Bei A ist x günstiger, weil 4x und 2x mit dem Faktor 2 passend werden."], workedExample: `A: 4x und 2x → x beseitigen
+B: +2y und -2y → y beseitigen
+C: 5y und 10y → y beseitigen` },
+      "l6-allowed": { hints: ["Frage dich bei jeder Aussage: Bleibt die Gleichung dadurch gleichwertig?", "Eine ganze Gleichung darf multipliziert werden; einzelne Terme nicht.", "Addieren und Subtrahieren ganzer Gleichungen ist erlaubt. Die rechte Seite darf nie weggelassen werden."], workedExample: `Erlaubt:
+I | · 3
+I + II
+II - I
+
+Nicht erlaubt:
+nur 2x zu 6x machen und den Rest unverändert lassen` },
+      "l6-both": { hints: ["Keine Variable fällt sofort weg. Suche das kleinste gemeinsame Vielfache.", "Für y sind die Koeffizienten 2 und -3. Das kgV ist 6.", "I·3 und II·2 ergeben +6y und -6y."], workedExample: `I:  3x + 2y = 17  | · 3
+⇔   9x + 6y = 51
+II: 2x - 3y = -6  | · 2
+⇔   4x - 6y = -12
+------------------
+   13x      = 39
+⇔    x      =  3
+
+I: 3·3 + 2y = 17
+⇔ 9 + 2y = 17
+⇔     2y = 8
+⇔      y = 4` },
+      "l7-system": { hints: ["Lege zuerst fest: t steht für einen Ticketpreis, p für einen Popcornpreis.", "Die Anzahl der gekauften Dinge wird zum Koeffizienten vor der Variable.", "2 Tickets und 3 Popcorn: 2t + 3p = 27. Vier Tickets und ein Popcorn: 4t + p = 29."], workedExample: `t = Ticketpreis
+p = Popcornpreis
+
+2 Tickets + 3 Popcorn:
+2t + 3p = 27
+
+4 Tickets + 1 Popcorn:
+4t + p = 29` },
+      "l7-solve": { hints: ["Überlege, welche Variable du passend machen möchtest.", "Wenn du II mit 3 multiplizierst, entsteht in beiden Gleichungen 3p.", "II·3: 12t + 3p = 87. Dann neue II minus I rechnen."], workedExample: `I:  2t + 3p = 27
+II: 4t +  p = 29  | · 3
+⇔  12t + 3p = 87
+
+II - I:
+12t + 3p = 87
+ 2t + 3p = 27
+--------------
+10t      = 60
+⇔ t      =  6
+
+I: 2·6 + 3p = 27
+⇔ 12 + 3p = 27
+⇔      3p = 15
+⇔       p = 5` },
+      "l7-reorder": { hints: ["Bei Textaufgaben darfst du nicht direkt losrechnen.", "Zuerst müssen Variablen und Gleichungen stehen.", "Die richtige Reihenfolge ist: Variablen, Gleichungen, Plan, Lösen, Antwortsatz."], workedExample: `1. t und p festlegen
+2. Zwei Gleichungen aufstellen
+3. Variable zum Beseitigen auswählen
+4. Gleichungssystem lösen
+5. Antwort mit Einheit formulieren` },
+      "l8-negative": { hints: ["Achte besonders auf das Minuszeichen vor 2x.", "Multipliziere I mit 2, damit -4x entsteht.", "I·2: -4x + 6y = 10. Mit II addieren: 7y = 21."], workedExample: `I: -2x + 3y =  5  | · 2
+⇔  -4x + 6y = 10
+II: 4x +  y = 11
+-----------------
+         7y = 21
+     ⇔    y =  3
+
+II: 4x + 3 = 11
+⇔  4x     =  8
+⇔   x     =  2` },
+      "l8-decimal": { hints: ["Beseitige zuerst die Dezimalzahl.", "Multipliziere I vollständig mit 2.", "I·2: x + 2y = 14. Danach neue I minus II: 3y = 12."], workedExample: `I:  0,5x +  y =  7  | · 2
+⇔      x + 2y = 14
+II:    x -  y =  2
+------------------  I - II
+          3y = 12
+      ⇔    y =  4
+
+II: x - 4 = 2
+⇔   x     = 6` },
+      "l8-fraction": { hints: ["Die erste Gleichung soll mit 2 multipliziert werden.", "Jeder Term wird verdoppelt, nicht nur der Bruch.", "1/2x · 2 = x, y · 2 = 2y und 8 · 2 = 16."], workedExample: `1/2x + y = 8   | · 2
+⇔    x + 2y = 16` },
+      "l9-error": { hints: ["Prüfe den Additionsschritt der Schülerin genau.", "Die linke Seite ist richtig addiert: 2x + (-2x) = 0 und 3y + y = 4y.", "Der Fehler liegt rechts: 12 + 4 = 16, nicht 8."], workedExample: `I:   2x + 3y = 12
+II: -2x +  y =  4
+-------------------
+          4y = 16
+
+Fehler der Schülerin:
+Sie schrieb 4y = 8.` },
+      "l9-special": { hints: ["Vergleiche, ob eine Gleichung ein Vielfaches der anderen ist.", "A ist dieselbe Gleichung verdoppelt. B hat links das Doppelte, aber rechts nicht den passenden Wert.", "C hat mit x + y und x - y zwei verschiedene Bedingungen und dadurch genau eine Lösung."], workedExample: `A: x+y=5 und 2x+2y=10 → dieselbe Gerade
+B: x+y=5 müsste verdoppelt 2x+2y=10 ergeben, nicht 12
+C: addieren ergibt 2x=6 → genau eine Lösung` },
+      "l9-no": { hints: ["Mache I so passend, dass beide Variablen beim Addieren verschwinden.", "Multipliziere I mit -2.", "Dann addierst du mit II und erhältst 0 = 2. Das ist ein Widerspruch."], workedExample: `I:  x + y = 4  | · (-2)
+⇔  -2x - 2y = -8
+II: 2x + 2y = 10
+----------------
+          0 =  2
+
+Widerspruch ⇒ keine Lösung` },
+      "l10-algorithm": { hints: ["Der erste Schritt ist immer eine Entscheidung, nicht eine Rechnung.", "Erst wählst du die Variable, dann machst du Koeffizienten passend.", "Danach kombinierst du die Gleichungen, berechnest beide Variablen und machst die Probe."], workedExample: `1. Variable zum Beseitigen auswählen
+2. Gleichungen passend multiplizieren
+3. Addieren oder subtrahieren
+4. Erste Variable berechnen
+5. Zweite Variable einsetzen
+6. Probe` },
+      "l10-master": { hints: ["Suche eine Variable, die sich mit einem kleinen Faktor beseitigen lässt.", "Bei y stehen -2y und +4y. Multipliziere I mit 2.", "I·2 ergibt 10x - 4y = 14. Addiere mit II."], workedExample: `I:  5x - 2y =  7  | · 2
+⇔  10x - 4y = 14
+II: 3x + 4y = 25
+----------------
+   13x      = 39
+⇔    x      =  3
+
+I: 5·3 - 2y = 7
+⇔ 15 - 2y = 7
+⇔     -2y = -8
+⇔       y = 4` },
+      "l10-minicode": { hints: ["Achte nur auf die x-Terme.", "4x und -4x sind entgegengesetzt.", "Beim Addieren fällt x weg und es entsteht 4y = 32."], workedExample: `I:   4x +  y = 18
+II: -4x + 3y = 14
+------------------
+          4y = 32` }
+    };
+
+    LEVELS.forEach(level => {
+      if (LEVEL_EXAMPLES[level.id]) level.method = { ...level.method, ...LEVEL_EXAMPLES[level.id] };
+      level.steps.forEach(step => {
+        if (step.type === "task" && TASK_HELP[step.id]) Object.assign(step, TASK_HELP[step.id]);
+      });
+    });
+
+    function safeLoad() { try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; } catch { return null; } }
+    function safeSave(data) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch {} }
+    function getInitialState() { return safeLoad() || { profile: null, progress: { unlocked: 1, completed: [], xp: 0, earnedTasks: [], bossBest: 0, certificateUnlocked: false } }; }
+
+    function Button({ children, onClick, variant = "primary", disabled = false, className = "", type = "button" }) {
+      const variants = {
+        primary: "bg-gradient-to-r from-sky-500 to-cyan-400 text-white shadow-lg shadow-sky-900/20 hover:brightness-110",
+        secondary: "bg-white/10 text-white border border-white/20 hover:bg-white/20",
+        dark: "bg-slate-900 text-white hover:bg-slate-800",
+        light: "bg-white text-slate-900 border border-slate-200 hover:bg-slate-50",
+        success: "bg-gradient-to-r from-emerald-500 to-lime-400 text-white hover:brightness-110",
+        danger: "bg-gradient-to-r from-rose-500 to-red-500 text-white hover:brightness-110",
+        ghost: "text-slate-700 hover:bg-slate-100"
+      };
+      return <button type={type} onClick={onClick} disabled={disabled} className={`rounded-2xl px-4 py-3 font-bold transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`}>{children}</button>;
+    }
+
+    function Badge({ children, tone = "sky" }) {
+      const tones = { sky: "bg-sky-100 text-sky-800", green: "bg-emerald-100 text-emerald-800", yellow: "bg-amber-100 text-amber-900", red: "bg-rose-100 text-rose-800", purple: "bg-violet-100 text-violet-800", slate: "bg-slate-100 text-slate-800" };
+      return <span className={`inline-flex rounded-full px-3 py-1 text-xs font-black ${tones[tone]}`}>{children}</span>;
+    }
+
+    function Header({ profile, progress, onMenu, onTeacher }) {
+      const done = progress.completed.length;
+      return (
+        <header className="sticky top-0 z-30 border-b border-white/10 bg-slate-950/75 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-3 py-3 sm:px-5">
+            <button onClick={onMenu} className="flex items-center gap-3 text-left">
+              <div className={`grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br ${profile?.color || "from-sky-400 to-cyan-300"} text-2xl shadow-glow`}>{profile?.avatar || "🚀"}</div>
+              <div><div className="text-sm text-slate-300">{profile?.mode === "team" ? "Team" : "Profil"}</div><div className="font-black leading-tight">{profile?.name || "Gast"}</div></div>
+            </button>
+            <div className="hidden flex-1 items-center gap-3 px-6 md:flex">
+              <div className="h-3 flex-1 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-sky-400 via-violet-400 to-emerald-400 transition-all" style={{ width: `${Math.min(100, (done / 10) * 100)}%` }} /></div>
+              <span className="whitespace-nowrap text-sm font-bold text-slate-200">{done}/10 Level</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="rounded-2xl border border-amber-300/30 bg-amber-400/10 px-3 py-2 text-sm font-black text-amber-200">⭐ {progress.xp} XP</div>
+              <button onClick={onTeacher} title="Lehrer-Menü" className="rounded-xl px-2 py-2 text-white/20 transition hover:bg-white/10 hover:text-white">⋮</button>
+            </div>
+          </div>
+        </header>
+      );
+    }
+
+    function Welcome({ onStart }) {
+      const [mode, setMode] = useState("single");
+      const [name, setName] = useState("");
+      const [support, setSupport] = useState("standard");
+      const [avatar, setAvatar] = useState(AVATARS[0]);
+      const [color, setColor] = useState(COLORS[0].value);
+      function randomName() { setName(NICKNAMES[Math.floor(Math.random() * NICKNAMES.length)]); }
+      function submit() { onStart({ mode, name: name.trim() || NICKNAMES[Math.floor(Math.random() * NICKNAMES.length)], support, avatar, color }); }
+      return (
+        <main className="mx-auto grid min-h-screen max-w-6xl place-items-center px-4 py-8">
+          <div className="grid w-full gap-6 lg:grid-cols-[1.05fr_.95fr]">
+            <section className="glass overflow-hidden rounded-[2rem] p-6 shadow-2xl sm:p-8">
+              <div className="mb-6 inline-flex rounded-full border border-sky-300/30 bg-sky-400/10 px-4 py-2 text-sm font-bold text-sky-100">Mission Additio · Jahrgangsstufe 8</div>
+              <h1 className="text-4xl font-black leading-tight sm:text-6xl">Rette die Stadt der <span className="bg-gradient-to-r from-sky-300 via-cyan-200 to-emerald-200 bg-clip-text text-transparent">Gleichungen</span></h1>
+              <p className="mt-5 max-w-2xl text-lg leading-relaxed text-slate-200">In Additio sind zehn Energie-Tore verschlossen. Jedes Tor öffnet sich nur, wenn du lineare Gleichungssysteme mit dem Additionsverfahren entschlüsselst. Du sammelst XP, bewegst deinen Avatar über die Karte und trittst am Ende gegen das Boss-Level an.</p>
+              <div className="mt-8 grid gap-4 sm:grid-cols-3">{[["🧩", "kurze Lerneinheiten", "InfoCards und Aufgaben wechseln sich ab."], ["💡", "adaptive Tipps", "Bei Fehlern werden die Hilfen konkreter."], ["🏁", "Boss-Finale", "Zeitspiel mit Aufgabenmix."]].map(([icon, title, text]) => <div key={title} className="rounded-3xl border border-white/10 bg-white/10 p-4"><div className="text-3xl">{icon}</div><div className="mt-2 font-black">{title}</div><div className="mt-1 text-sm text-slate-300">{text}</div></div>)}</div>
+            </section>
+            <section className="soft-card rounded-[2rem] p-5 shadow-2xl sm:p-7">
+              <h2 className="text-2xl font-black">Profil einrichten</h2><p className="mt-1 text-sm text-slate-600">Wähle deinen Modus und dein Lernprofil.</p>
+              <div className="mt-5 grid grid-cols-2 gap-3"><Button variant={mode === "single" ? "dark" : "light"} onClick={() => setMode("single")}>👤 Einzel</Button><Button variant={mode === "team" ? "dark" : "light"} onClick={() => setMode("team")}>👥 Team</Button></div>
+              <label className="mt-5 block"><span className="text-sm font-black text-slate-700">{mode === "team" ? "Teamname" : "Name"}</span><div className="mt-2 flex gap-2"><input value={name} onChange={e => setName(e.target.value)} placeholder={mode === "team" ? "Teamname eingeben" : "Namen eingeben"} className="min-w-0 flex-1 rounded-2xl border border-slate-300 bg-white px-4 py-3 font-bold outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100" /><Button variant="light" onClick={randomName} className="shrink-0">🎲</Button></div></label>
+              <div className="mt-5"><div className="text-sm font-black text-slate-700">Unterstützung</div><div className="mt-2 grid gap-2 sm:grid-cols-3">{[["basis", "Basis", "mehr Tipps"], ["standard", "Standard", "ausgewogen"], ["profi", "Profi", "weniger Hilfe"]].map(([id, label, sub]) => <button key={id} onClick={() => setSupport(id)} className={`rounded-2xl border p-3 text-left transition ${support === id ? "border-sky-500 bg-sky-50 ring-4 ring-sky-100" : "border-slate-200 bg-white hover:bg-slate-50"}`}><div className="font-black">{label}</div><div className="text-xs text-slate-500">{sub}</div></button>)}</div></div>
+              <div className="mt-5"><div className="text-sm font-black text-slate-700">Avatar</div><div className="mt-2 flex flex-wrap gap-2">{AVATARS.map(a => <button key={a} onClick={() => setAvatar(a)} className={`grid h-12 w-12 place-items-center rounded-2xl text-2xl transition ${avatar === a ? "bg-slate-900 text-white ring-4 ring-slate-200" : "bg-slate-100 hover:bg-slate-200"}`}>{a}</button>)}</div></div>
+              <div className="mt-5"><div className="text-sm font-black text-slate-700">Farbe</div><div className="mt-2 flex flex-wrap gap-2">{COLORS.map(c => <button key={c.name} onClick={() => setColor(c.value)} className={`h-11 w-16 rounded-2xl bg-gradient-to-br ${c.value} transition ${color === c.value ? "ring-4 ring-slate-300" : "hover:scale-105"}`} title={c.name} />)}</div></div>
+              <Button onClick={submit} className="mt-7 w-full text-lg">Mission starten 🚀</Button>
+            </section>
+          </div>
+        </main>
+      );
+    }
+
+    function ProgressMap({ progress, profile, onLevel }) {
+      const pos = Math.min(9, Math.max(0, progress.unlocked - 1));
+      return (
+        <div className="glass rounded-[2rem] p-5 shadow-xl">
+          <div className="mb-4 flex items-center justify-between gap-3"><div><h2 className="text-xl font-black">Additio-Karte</h2><p className="text-sm text-slate-300">Dein Avatar bewegt sich mit jedem freigeschalteten Level weiter.</p></div><div className="rounded-2xl bg-white/10 px-3 py-2 text-sm font-black">Boss: {progress.completed.includes(10) ? "frei" : "gesperrt"}</div></div>
+          <div className="relative mt-8 px-3 pb-5 pt-12"><div className="map-line absolute left-8 right-8 top-[72px]" /><div className={`pulse-avatar absolute top-4 z-10 grid h-14 w-14 place-items-center rounded-3xl bg-gradient-to-br ${profile.color} text-3xl shadow-glow transition-all duration-700`} style={{ left: `calc(${(pos / 9) * 100}% - ${pos === 0 ? "0px" : pos === 9 ? "56px" : "28px"})` }}>{profile.avatar}</div><div className="relative grid grid-cols-10 gap-1">{LEVELS.map(level => { const locked = level.id > progress.unlocked; const done = progress.completed.includes(level.id); return <button key={level.id} onClick={() => !locked && onLevel(level.id)} disabled={locked} className={`relative mt-8 flex h-12 items-center justify-center rounded-2xl text-sm font-black transition ${done ? "bg-emerald-400 text-emerald-950" : locked ? "bg-slate-700/70 text-slate-400" : "bg-white text-slate-900 hover:scale-105"}`}>{locked ? "🔒" : done ? "✓" : level.id}</button>; })}</div></div>
+        </div>
+      );
+    }
+
+    function MainMenu({ profile, progress, onStartLevel, onBoss, onResetProfile }) {
+      return (
+        <main className="mx-auto max-w-6xl px-4 py-6 sm:px-5">
+          <div className="mb-6 grid gap-5 lg:grid-cols-[1fr_320px]">
+            <ProgressMap progress={progress} profile={profile} onLevel={onStartLevel} />
+            <aside className="glass rounded-[2rem] p-5 shadow-xl"><div className="text-4xl floaty">{profile.avatar}</div><h2 className="mt-3 text-2xl font-black">Willkommen, {profile.name}</h2><p className="mt-2 text-sm text-slate-300">Lernprofil: <span className="font-black text-white">{profile.support === "basis" ? "Basis" : profile.support === "profi" ? "Profi" : "Standard"}</span></p><div className="mt-4 rounded-3xl bg-white/10 p-4"><div className="text-sm text-slate-300">Gesamtfortschritt</div><div className="mt-1 text-3xl font-black">{progress.completed.length}/10</div><div className="mt-3 h-3 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-sky-400 to-emerald-400" style={{ width: `${progress.completed.length * 10}%` }} /></div></div><Button variant={progress.completed.includes(10) ? "success" : "secondary"} disabled={!progress.completed.includes(10)} onClick={onBoss} className="mt-4 w-full">Boss-Level starten 🏁</Button><Button variant="secondary" onClick={onResetProfile} className="mt-3 w-full">Profil wechseln</Button></aside>
+          </div>
+          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{LEVELS.map(level => { const locked = level.id > progress.unlocked; const done = progress.completed.includes(level.id); return <article key={level.id} className={`soft-card overflow-hidden rounded-[1.7rem] shadow-xl transition ${locked ? "opacity-60" : "hover:-translate-y-1"}`}><div className={`h-3 bg-gradient-to-r ${level.color}`} /><div className="p-5"><div className="flex items-start justify-between gap-3"><div className="text-4xl">{locked ? "🔒" : level.icon}</div>{done ? <Badge tone="green">abgeschlossen</Badge> : locked ? <Badge tone="slate">gesperrt</Badge> : <Badge>frei</Badge>}</div><h3 className="mt-4 text-xl font-black">Level {level.id}: {level.title}</h3><p className="mt-1 text-sm text-slate-600">{level.subtitle}</p><div className="mt-4 flex items-center justify-between text-sm text-slate-500"><span>{level.steps.filter(s => s.type === "task").length} Aufgaben</span><span>{level.steps.some(s => s.type === "worksheet") ? "mit AB-Phase" : "digital"}</span></div><Button disabled={locked} onClick={() => onStartLevel(level.id)} variant={done ? "light" : "dark"} className="mt-4 w-full">{done ? "Wiederholen" : locked ? "Gesperrt" : "Starten"}</Button></div></article>; })}</section>
+        </main>
+      );
+    }
+
+    function MethodIntro({ level, onNext }) {
+      return (
+        <section className="soft-card overflow-hidden rounded-[2rem] shadow-2xl">
+          <div className={`h-3 bg-gradient-to-r ${level.color}`} />
+          <div className="p-5 sm:p-8">
+            <div className="mb-4 flex items-center gap-3"><div className={`grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br ${level.color} text-3xl shadow-lg`}>{level.icon}</div><div><div className="text-sm font-black uppercase tracking-wide text-slate-500">Level-Erklärung</div><h2 className="text-2xl font-black">{level.method.title}</h2></div></div>
+            <div className="grid gap-4 lg:grid-cols-[1fr_.9fr]">
+              <ol className="space-y-3">{level.method.steps.map((s, i) => <li key={i} className="flex gap-3 rounded-3xl bg-slate-50 p-4"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-slate-900 text-sm font-black text-white">{i + 1}</span><span className="leading-relaxed text-slate-700">{formatParts(s)}</span></li>)}</ol>
+              <div className="rounded-3xl border border-sky-100 bg-sky-50 p-5"><div className="mb-2 text-sm font-black uppercase tracking-wide text-sky-700">Mini-Beispiel</div><div className="overflow-x-auto rounded-2xl bg-white p-4">
+                  <pre className="whitespace-pre-wrap font-mono text-sm font-black leading-relaxed text-slate-900">{level.method.example}</pre>
+                </div><div className="mt-4 rounded-2xl bg-white p-4 text-sm leading-relaxed text-slate-700">
+                  <div className="font-black text-slate-900">Saubere mathematische Schreibweise</div>
+                  <p className="mt-1">Schreibe Gleichungen untereinander, sodass die Gleichheitszeichen in einer Spalte stehen. Umformungen werden mit <span className="font-mono font-black">⇔</span> notiert.</p>
+                  <pre className="mt-3 overflow-x-auto rounded-2xl bg-slate-950 p-3 font-mono text-xs font-bold leading-relaxed text-sky-100">{level.method.notation}</pre>
+                </div>
+                <div className="mt-5 rounded-2xl bg-white p-4 text-sm font-bold text-slate-600">Merke: Das Additionsverfahren ist kein Ratespiel. Du erzeugst gezielt eine Gleichung mit nur einer Variablen und notierst jeden Schritt nachvollziehbar.</div></div>
+            </div>
+            <div className="mt-7 flex justify-end"><Button variant="dark" onClick={onNext}>Mit Level starten →</Button></div>
+          </div>
+        </section>
+      );
+    }
+
+    function InfoCard({ step, onNext }) {
+      return <section className="soft-card rounded-[2rem] p-5 shadow-2xl sm:p-8"><div className="mb-4 flex items-center gap-3"><div className="grid h-12 w-12 place-items-center rounded-2xl bg-sky-100 text-2xl">💡</div><div><div className="text-sm font-black uppercase tracking-wide text-sky-700">InfoCard</div><h2 className="text-2xl font-black">{step.title}</h2></div></div><div className="space-y-3 text-lg leading-relaxed text-slate-700">{step.text.map((line, i) => <p key={i}>{formatParts(line)}</p>)}</div><div className="mt-7 flex justify-end"><Button variant="dark" onClick={onNext}>Verstanden →</Button></div></section>;
+    }
+
+    function WorksheetPhase({ step, onNext }) {
+      const [time, setTime] = useState(step.duration || 15);
+      useEffect(() => setTime(step.duration || 15), [step.id]);
+      useEffect(() => { if (time <= 0) return; const t = setTimeout(() => setTime(v => v - 1), 1000); return () => clearTimeout(t); }, [time]);
+      return <section className="soft-card rounded-[2rem] p-5 shadow-2xl sm:p-8"><div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between"><div><div className="mb-2 inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-black text-amber-900">Blended Learning</div><h2 className="text-3xl font-black">{step.title}</h2><p className="mt-3 max-w-3xl text-lg leading-relaxed text-slate-700">{step.prompt}</p></div><div className="grid h-24 w-24 shrink-0 place-items-center rounded-[2rem] bg-slate-900 text-center text-white shadow-xl"><div><div className="text-3xl font-black">{time}</div><div className="text-xs text-slate-300">Sek.</div></div></div></div><div className="mt-6 grid gap-3 md:grid-cols-3">{step.checklist.map(item => <div key={item} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 font-semibold text-slate-700">□ {item}</div>)}</div><div className="mt-7 flex flex-col items-stretch justify-between gap-3 rounded-3xl bg-sky-50 p-4 sm:flex-row sm:items-center"><p className="text-sm font-bold text-sky-900">Die Weiter-Schaltfläche wird nach kurzer Bearbeitungszeit freigegeben.</p><Button variant="dark" disabled={time > 0} onClick={onNext}>Phase abgeschlossen →</Button></div></section>;
+    }
+
+    function TaskGraphic({ type }) {
+      if (type === "balance") return <div className="my-4 rounded-3xl bg-gradient-to-br from-slate-50 to-sky-50 p-4"><svg viewBox="0 0 520 180" className="h-44 w-full"><line x1="260" y1="35" x2="260" y2="140" stroke="#334155" strokeWidth="8" strokeLinecap="round"/><line x1="110" y1="70" x2="410" y2="70" stroke="#334155" strokeWidth="8" strokeLinecap="round"/><polygon points="260,135 215,170 305,170" fill="#334155"/><line x1="150" y1="70" x2="110" y2="120" stroke="#64748b" strokeWidth="4"/><line x1="370" y1="70" x2="410" y2="120" stroke="#64748b" strokeWidth="4"/><ellipse cx="110" cy="126" rx="75" ry="18" fill="#bae6fd" stroke="#0284c7" strokeWidth="3"/><ellipse cx="410" cy="126" rx="75" ry="18" fill="#fde68a" stroke="#d97706" strokeWidth="3"/><text x="72" y="118" fontSize="22" fontWeight="800" fill="#0f172a">2x + y</text><text x="363" y="118" fontSize="22" fontWeight="800" fill="#0f172a">11</text><text x="210" y="28" fontSize="17" fontWeight="800" fill="#0369a1">Gleichgewicht bleibt nur bei ganzen Gleichungen erhalten</text></svg></div>;
+      if (type === "tickets") return <div className="my-4 grid gap-3 rounded-3xl bg-gradient-to-r from-rose-50 to-amber-50 p-4 sm:grid-cols-2"><div className="rounded-2xl bg-white p-4 shadow-sm"><div className="text-3xl">🎟️🎟️ 🍿🍿🍿</div><div className="mt-2 font-black">2t + 3p = 27 €</div></div><div className="rounded-2xl bg-white p-4 shadow-sm"><div className="text-3xl">🎟️🎟️🎟️🎟️ 🍿</div><div className="mt-2 font-black">4t + p = 29 €</div></div></div>;
+      return null;
+    }
+
+    function HotspotChart({ task, value, onChange }) {
+      const scale = 34, ox = 42, oy = 318;
+      const sx = x => ox + x * scale;
+      const sy = y => oy - y * scale;
+      return <div className="my-4 overflow-hidden rounded-3xl bg-slate-50 p-3"><svg viewBox="0 0 360 340" className="mx-auto h-[320px] max-w-full">{[0,1,2,3,4,5,6,7,8].map(n => <g key={n}><line x1={sx(n)} y1={sy(0)} x2={sx(n)} y2={sy(8)} stroke="#cbd5e1" strokeWidth="1"/><line x1={sx(0)} y1={sy(n)} x2={sx(8)} y2={sy(n)} stroke="#cbd5e1" strokeWidth="1"/><text x={sx(n)-4} y={sy(0)+20} fontSize="11" fill="#64748b">{n}</text><text x={sx(0)-24} y={sy(n)+4} fontSize="11" fill="#64748b">{n}</text></g>)}<line x1={sx(0)} y1={sy(0)} x2={sx(8.2)} y2={sy(0)} stroke="#0f172a" strokeWidth="2"/><line x1={sx(0)} y1={sy(0)} x2={sx(0)} y2={sy(8.2)} stroke="#0f172a" strokeWidth="2"/>{task.chart.lines.map((line, i) => <g key={line.label}><line x1={sx(line.from[0])} y1={sy(line.from[1])} x2={sx(line.to[0])} y2={sy(line.to[1])} stroke={i === 0 ? "#0284c7" : "#db2777"} strokeWidth="4" strokeLinecap="round"/><text x={sx(line.to[0]) - 58} y={sy(line.to[1]) - 12} fontSize="13" fontWeight="800" fill={i === 0 ? "#0284c7" : "#db2777"}>{line.label}</text></g>)}{task.chart.points.map(point => <g key={point.id} onClick={() => onChange(point.id)} className="cursor-pointer"><circle cx={sx(point.x)} cy={sy(point.y)} r="14" fill={value === point.id ? "#22c55e" : "#f8fafc"} stroke={value === point.id ? "#166534" : "#0f172a"} strokeWidth="3"/><text x={sx(point.x)-5} y={sy(point.y)+5} fontSize="14" fontWeight="900" fill="#0f172a">{point.label}</text></g>)}</svg></div>;
+    }
+
+    function DetailedHint({ task, hint, index = 0, showWorked = false }) {
+      return (
+        <div className="rounded-2xl bg-white/75 p-3 text-sm leading-relaxed text-slate-800">
+          <div className="font-black text-slate-900">{index === 0 ? "Tipp" : `Hilfe ${index + 1}`}</div>
+          <p className="mt-1 font-semibold">{hint}</p>
+          {showWorked && task?.workedExample && (
+            <pre className="mt-3 overflow-x-auto rounded-2xl bg-slate-950 p-3 font-mono text-xs font-bold leading-relaxed text-sky-100">{task.workedExample}</pre>
+          )}
+        </div>
+      );
+    }
+
+    function FeedbackBox({ feedback, task, onNext }) {
+      if (!feedback) return null;
+      return <div className={`my-5 rounded-3xl border p-4 ${feedback.ok ? "border-emerald-200 bg-emerald-50 text-emerald-950" : "border-amber-200 bg-amber-50 text-amber-950"}`}><div className="flex items-start gap-3"><div className="text-2xl">{feedback.ok ? "✅" : "💡"}</div><div className="flex-1"><div className="font-black">{feedback.title}</div>{feedback.ok ? (
+                <div className="mt-1 text-sm leading-relaxed">{feedback.message}</div>
+              ) : (
+                <DetailedHint task={task} hint={feedback.message} index={Math.max(0, (feedback.attempts || 1) - 1)} showWorked={(feedback.attempts || 1) >= 3} />
+              )}{feedback.ok && <Button variant="success" onClick={onNext} className="mt-4">Weiter zur nächsten Station →</Button>}</div></div></div>;
+    }
+
+    function TaskRenderer({ task, support, teacherSolution, onDone }) {
+      const [attempts, setAttempts] = useState(0), [feedback, setFeedback] = useState(null), [single, setSingle] = useState(""), [multi, setMulti] = useState([]), [text, setText] = useState(""), [cloze, setCloze] = useState({}), [matches, setMatches] = useState({}), [order, setOrder] = useState([]), [dragState, setDragState] = useState({}), [selectedCard, setSelectedCard] = useState(null), [hotspot, setHotspot] = useState(""), [showExtraHint, setShowExtraHint] = useState(false), [revealedHints, setRevealedHints] = useState(0);
+      useEffect(() => { setAttempts(0); setFeedback(null); setSingle(""); setMulti([]); setText(""); setCloze({}); setMatches({}); setOrder([]); setDragState({}); setSelectedCard(null); setHotspot(""); setShowExtraHint(false); setRevealedHints(support === "basis" ? 1 : 0); }, [task.id, support]);
+      const visibleHintCount = Math.min(task.hints?.length || 0, Math.max(revealedHints, support === "basis" ? 1 : 0));
+      const visibleHints = (task.hints || []).slice(0, visibleHintCount);
+      const hasMoreHints = visibleHintCount < (task.hints?.length || 0);
+      function revealNextHint() { setRevealedHints(old => Math.min((task.hints || []).length, old + 1)); }
+      function toggleMulti(option) { setMulti(old => old.includes(option) ? old.filter(x => x !== option) : [...old, option]); }
+      function addOrder(item) { if (!order.includes(item)) setOrder([...order, item]); }
+      function setCardBin(cardId, bin) { setDragState(old => ({ ...old, [cardId]: bin })); setSelectedCard(null); }
+      function evaluate() {
+        let ok = false;
+        if (["single", "error", "mini"].includes(task.kind)) ok = single === task.answer;
+        if (task.kind === "multiple") ok = sameSet(multi, task.answer);
+        if (task.kind === "input") ok = checkSolutionInput(text, task.solution);
+        if (task.kind === "cloze") ok = Object.entries(task.answers).every(([id, accepted]) => checkClozeValue(cloze[id], accepted));
+        if (task.kind === "matching") ok = task.items.every(item => matches[item.id] === task.answer[item.id]);
+        if (["sort", "reorder"].includes(task.kind)) ok = sameOrder(order, task.answer);
+        if (task.kind === "dragdrop") ok = task.cards.every(card => dragState[card.id] === task.answer[card.id]);
+        if (task.kind === "hotspot") ok = hotspot === task.answer;
+        if (ok) setFeedback({ ok: true, title: "Richtig gelöst!", message: task.explanation || "Sehr gut. Du hast den nächsten Schritt sicher erkannt." });
+        else { const nextAttempts = attempts + 1; setAttempts(nextAttempts); const adaptiveHint = task.hints?.[Math.min(nextAttempts - 1, task.hints.length - 1)] || "Prüfe deine Rechnung Schritt für Schritt."; setRevealedHints(old => Math.min((task.hints || []).length, Math.max(old, nextAttempts))); setFeedback({ ok: false, title: nextAttempts >= 3 ? "Fast geschafft – jetzt konkret:" : "Noch nicht ganz.", message: adaptiveHint, attempts: nextAttempts }); }
+      }
+      function answerText() { return task.solutionText || (task.answer ? `Richtig ist: ${task.answer}` : "Nutze die Hinweise und prüfe den Lösungsweg Schritt für Schritt."); }
+      const difficultyTone = task.difficulty === "Profi" ? "purple" : task.difficulty === "Mittel" ? "yellow" : "green";
+      return <section className="soft-card rounded-[2rem] p-5 shadow-2xl sm:p-8"><div className="mb-4 flex flex-wrap items-start justify-between gap-3"><div><div className="mb-2 flex flex-wrap gap-2"><Badge tone={difficultyTone}>{task.difficulty}</Badge><Badge tone="sky">{task.xp || 0} XP</Badge>{support === "basis" && <Badge tone="green">Hilfen aktiv</Badge>}{support === "profi" && <Badge tone="purple">Profi-Modus</Badge>}</div><h2 className="text-2xl font-black">{task.title}</h2></div><div className="rounded-2xl bg-slate-100 px-3 py-2 text-sm font-black text-slate-700">Versuch {attempts + 1}</div></div><p className="text-lg leading-relaxed text-slate-700">{task.prompt}</p>{task.equation && <div className="mt-4 overflow-x-auto rounded-3xl bg-slate-950 p-4 font-mono text-base font-black text-sky-100 sm:text-lg">{task.equation}</div>}<TaskGraphic type={task.graphic} />{teacherSolution && <div className="my-5 rounded-3xl border-2 border-fuchsia-300 bg-fuchsia-50 p-4 text-fuchsia-950"><div className="font-black">Lehrer-Lösung</div><div className="mt-1 text-sm leading-relaxed">{answerText()}</div></div>}{visibleHints.length > 0 && !feedback?.ok && <div className="my-5 rounded-3xl bg-sky-50 p-4 text-sky-950"><div className="font-black">Hilfen zur aktuellen Aufgabe</div><div className="mt-3 space-y-3">{visibleHints.map((hint, i) => <DetailedHint key={i} task={task} hint={hint} index={i} showWorked={i === (task.hints || []).length - 1} />)}</div></div>}<FeedbackBox feedback={feedback} task={task} onNext={() => onDone(task.xp || 0)} />
+        {["single", "error", "mini"].includes(task.kind) && <div className="mt-5 grid gap-3">{task.options.map(option => <button key={option} onClick={() => setSingle(option)} className={`rounded-2xl border p-4 text-left font-bold transition ${single === option ? "border-sky-500 bg-sky-50 ring-4 ring-sky-100" : "border-slate-200 bg-white hover:bg-slate-50"}`}>{option}</button>)}</div>}
+        {task.kind === "multiple" && <div className="mt-5 grid gap-3">{task.options.map(option => <button key={option} onClick={() => toggleMulti(option)} className={`rounded-2xl border p-4 text-left font-bold transition ${multi.includes(option) ? "border-emerald-500 bg-emerald-50 ring-4 ring-emerald-100" : "border-slate-200 bg-white hover:bg-slate-50"}`}><span className="mr-2">{multi.includes(option) ? "☑" : "☐"}</span>{option}</button>)}</div>}
+        {task.kind === "input" && <div className="mt-5"><input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => { if (e.key === "Enter") evaluate(); }} placeholder={task.placeholder || "Antwort eingeben"} className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-4 text-lg font-bold outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100" /><p className="mt-2 text-xs font-semibold text-slate-500">Du kannst verschiedene Schreibweisen nutzen, zum Beispiel <span className="font-mono">x=...; y=...</span>, <span className="font-mono">(...;...)</span> oder nur die beiden Werte in der richtigen Reihenfolge.</p></div>}
+        {task.kind === "cloze" && <div className="mt-5 rounded-3xl bg-slate-50 p-4 text-lg font-bold leading-loose">{task.clozeText.map((part, idx) => typeof part === "string" ? <React.Fragment key={idx}>{part}</React.Fragment> : <input key={part.id} value={cloze[part.id] || ""} onChange={e => setCloze(old => ({ ...old, [part.id]: e.target.value }))} className="mx-1 inline-block rounded-xl border border-slate-300 px-3 py-2 text-center font-mono outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100" style={{ width: `${Math.max(56, (part.size || 4) * 14)}px` }} />)}</div>}
+        {task.kind === "matching" && <div className="mt-5 space-y-4">{task.items.map(item => <div key={item.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-4"><div className="font-black">{item.left}</div><div className="mt-3 flex flex-wrap gap-2">{task.choices.map(choice => <button key={choice} onClick={() => setMatches(old => ({ ...old, [item.id]: choice }))} className={`rounded-2xl px-3 py-2 text-sm font-black transition ${matches[item.id] === choice ? "bg-slate-900 text-white" : "bg-white text-slate-700 hover:bg-slate-100"}`}>{choice}</button>)}</div></div>)}</div>}
+        {["sort", "reorder"].includes(task.kind) && <div className="mt-5 grid gap-4 lg:grid-cols-2"><div className="rounded-3xl bg-slate-50 p-4"><div className="mb-3 font-black">Verfügbare Schritte</div><div className="flex flex-wrap gap-2">{task.items.filter(item => !order.includes(item)).map(item => <button key={item} onClick={() => addOrder(item)} className="rounded-2xl bg-white px-3 py-2 text-left text-sm font-bold text-slate-800 shadow-sm hover:bg-sky-50">{item}</button>)}</div></div><div className="rounded-3xl bg-slate-900 p-4 text-white"><div className="mb-3 flex items-center justify-between gap-3"><div className="font-black">Deine Reihenfolge</div><button onClick={() => setOrder([])} className="text-xs font-black text-sky-200 hover:text-white">zurücksetzen</button></div><ol className="space-y-2">{order.map((item, idx) => <li key={item} className="rounded-2xl bg-white/10 p-3 text-sm font-bold">{idx + 1}. {item}</li>)}{order.length === 0 && <li className="text-sm text-slate-400">Noch kein Schritt ausgewählt.</li>}</ol></div></div>}
+        {task.kind === "dragdrop" && <div className="mt-5 grid gap-4 lg:grid-cols-[.9fr_1.1fr]"><div className="rounded-3xl bg-slate-50 p-4"><div className="mb-3 font-black">Karten</div><div className="space-y-2">{task.cards.map(card => <button key={card.id} draggable="true" onDragStart={e => e.dataTransfer.setData("text/plain", card.id)} onClick={() => setSelectedCard(card.id)} className={`drag-card w-full rounded-2xl border p-3 text-left text-sm font-bold transition ${selectedCard === card.id ? "border-sky-500 bg-sky-50 ring-4 ring-sky-100" : dragState[card.id] ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-white hover:bg-slate-100"}`}>{card.text}{dragState[card.id] && <div className="mt-1 text-xs text-emerald-700">→ {dragState[card.id]}</div>}</button>)}</div></div><div className="grid gap-3 sm:grid-cols-2">{task.bins.map(bin => <div key={bin} onDragOver={e => e.preventDefault()} onDrop={e => { const id = e.dataTransfer.getData("text/plain"); if (id) setCardBin(id, bin); }} onClick={() => selectedCard && setCardBin(selectedCard, bin)} className="min-h-[190px] rounded-3xl border-2 border-dashed border-slate-300 bg-slate-50 p-4"><div className="mb-3 font-black">{bin}</div><div className="space-y-2">{task.cards.filter(card => dragState[card.id] === bin).map(card => <div key={card.id} className="rounded-2xl bg-white p-3 text-sm font-bold shadow-sm">{card.text}</div>)}</div></div>)}</div></div>}
+        {task.kind === "hotspot" && <HotspotChart task={task} value={hotspot} onChange={setHotspot} />}
+        <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between"><div className="flex flex-wrap gap-2">{hasMoreHints && !feedback?.ok && <Button variant="light" onClick={revealNextHint}>{visibleHintCount === 0 ? "Tipp anzeigen" : "Weitere Hilfe anzeigen"}</Button>}{!hasMoreHints && task.workedExample && !feedback?.ok && <Button variant="light" onClick={() => setRevealedHints((task.hints || []).length)}>Lösungsweg anzeigen</Button>}</div>{!feedback?.ok && <Button variant="dark" onClick={evaluate}>Antwort prüfen</Button>}</div>
+      </section>;
+    }
+
+    function LevelView({ level, stepIndex, setStepIndex, profile, updateProgress, onBack, onFinished, teacherSolution }) {
+      const realStepIndex = stepIndex - 1;
+      const step = realStepIndex >= 0 ? level.steps[realStepIndex] : null;
+      useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); }, [level.id, stepIndex]);
+      function completeStep(xp = 0, skipped = false) {
+        const current = step;
+        updateProgress(old => {
+          const earned = new Set(old.earnedTasks || []);
+          let addXp = 0;
+          if (!skipped && current?.type === "task" && current.id && !earned.has(current.id)) { earned.add(current.id); addXp = xp; }
+          const next = { ...old, xp: old.xp + addXp, earnedTasks: Array.from(earned) };
+          if (realStepIndex >= level.steps.length - 1) { next.completed = Array.from(new Set([...(old.completed || []), level.id])); next.unlocked = Math.max(old.unlocked, level.id + 1); }
+          return next;
+        });
+        if (realStepIndex < level.steps.length - 1) setStepIndex(stepIndex + 1); else onFinished();
+      }
+      return <main className="mx-auto max-w-5xl px-4 py-6 sm:px-5"><div className="mb-5 flex flex-col gap-4 rounded-[2rem] border border-white/10 bg-white/10 p-4 backdrop-blur md:flex-row md:items-center md:justify-between"><div className="flex items-center gap-4"><button onClick={onBack} className="grid h-11 w-11 place-items-center rounded-2xl bg-white/10 font-black hover:bg-white/20">←</button><div><div className="text-sm font-bold text-slate-300">Level {level.id} · {stepIndex === 0 ? "Erklärung" : `Station ${realStepIndex + 1}/${level.steps.length}`}</div><h1 className="text-2xl font-black">{level.icon} {level.title}</h1></div></div><div className="h-3 overflow-hidden rounded-full bg-white/10 md:w-64"><div className={`h-full rounded-full bg-gradient-to-r ${level.color} transition-all`} style={{ width: `${((stepIndex + 1) / (level.steps.length + 1)) * 100}%` }} /></div></div>{stepIndex === 0 && <MethodIntro level={level} onNext={() => setStepIndex(1)} />}{step?.type === "info" && <InfoCard step={step} onNext={() => completeStep(0)} />}{step?.type === "worksheet" && <WorksheetPhase step={step} onNext={() => completeStep(0)} />}{step?.type === "task" && <TaskRenderer task={step} support={profile.support} teacherSolution={teacherSolution} onDone={(xp) => completeStep(xp)} />}</main>;
+    }
+
+    function BossGame({ profile, progress, updateProgress, onMenu, onCertificate }) {
+      const [active, setActive] = useState(false), [time, setTime] = useState(60), [questions, setQuestions] = useState([]), [idx, setIdx] = useState(0), [score, setScore] = useState(0), [chosen, setChosen] = useState(""), [input, setInput] = useState(""), [answers, setAnswers] = useState([]), [finished, setFinished] = useState(false);
+      const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
+      function start() { setQuestions(shuffle(bossQuestions)); setIdx(0); setScore(0); setChosen(""); setInput(""); setAnswers([]); setTime(60); setFinished(false); setActive(true); }
+      useEffect(() => { if (!active || finished) return; if (time <= 0) { finish(); return; } const t = setTimeout(() => setTime(v => v - 1), 1000); return () => clearTimeout(t); }, [active, finished, time]);
+      function finish() { setFinished(true); setActive(false); updateProgress(old => ({ ...old, bossBest: Math.max(old.bossBest || 0, score), certificateUnlocked: true, xp: old.xp + Math.max(0, score * 5) })); }
+      function submit() { const q = questions[idx]; if (!q) return finish(); let ok = q.kind === "single" ? chosen === q.answer : checkSolutionInput(input, q.solution); const record = { q: q.q, ok, user: q.kind === "single" ? chosen : input, solution: q.kind === "single" ? q.answer : Object.entries(q.solution.vars).map(([k,v]) => `${k}=${v}`).join("; "), explanation: q.explanation }; setAnswers(old => [...old, record]); if (ok) setScore(s => s + 1); if (idx >= questions.length - 1) setTimeout(() => finish(), 50); else { setIdx(i => i + 1); setChosen(""); setInput(""); } }
+      const current = questions[idx];
+      if (!active && !finished) return <main className="mx-auto grid min-h-[calc(100vh-80px)] max-w-5xl place-items-center px-4 py-8"><section className="glass rounded-[2rem] p-6 text-center shadow-2xl sm:p-10"><div className="mx-auto grid h-24 w-24 place-items-center rounded-[2rem] bg-gradient-to-br from-yellow-300 to-orange-400 text-5xl shadow-glow">🏁</div><h1 className="mt-6 text-4xl font-black">Boss-Level: Additio-Core</h1><p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-slate-200">Du hast 60 Sekunden. Löse so viele Aufgaben wie möglich. Jede richtige Antwort stabilisiert den Gleichungs-Kern.</p><div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row"><Button onClick={start} className="text-lg">Finale starten</Button><Button variant="secondary" onClick={onMenu}>Zurück zum Menü</Button></div></section></main>;
+      if (finished) return <main className="mx-auto max-w-5xl px-4 py-8"><section className="soft-card rounded-[2rem] p-5 shadow-2xl sm:p-8"><div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"><div><div className="text-5xl">🎉</div><h1 className="mt-3 text-3xl font-black">Boss-Level beendet</h1><p className="mt-2 text-slate-600">Score: <span className="font-black text-slate-950">{score}</span> von {answers.length}</p></div><div className="rounded-[2rem] bg-slate-900 p-5 text-center text-white"><div className="text-sm text-slate-300">Bestleistung</div><div className="text-4xl font-black">{Math.max(progress.bossBest || 0, score)}</div></div></div><div className="mt-6 grid gap-4">{answers.map((a, i) => <div key={i} className={`rounded-3xl border p-4 ${a.ok ? "border-emerald-200 bg-emerald-50" : "border-rose-200 bg-rose-50"}`}><div className="font-black">{a.ok ? "✅" : "❌"} {a.q}</div><div className="mt-1 text-sm text-slate-700">Deine Antwort: <span className="font-bold">{a.user || "—"}</span></div>{!a.ok && <div className="mt-1 text-sm text-slate-700">Richtige Lösung: <span className="font-bold">{a.solution}</span></div>}<div className="mt-2 text-sm text-slate-600">{a.explanation}</div></div>)}</div><div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-end"><Button variant="light" onClick={start}>Erneut versuchen</Button><Button variant="dark" onClick={onCertificate}>Zertifikat anzeigen</Button></div></section></main>;
+      return <main className="mx-auto max-w-4xl px-4 py-8"><section className="soft-card rounded-[2rem] p-5 shadow-2xl sm:p-8"><div className="mb-5 flex items-center justify-between gap-4"><div><div className="text-sm font-black text-slate-500">Boss-Frage {idx + 1}/{questions.length}</div><div className="text-2xl font-black">Score: {score}</div></div><div className={`grid h-20 w-20 place-items-center rounded-[2rem] text-3xl font-black text-white ${time <= 10 ? "bg-rose-500" : "bg-slate-900"}`}>{time}</div></div><div className="rounded-3xl bg-slate-950 p-5 text-xl font-black leading-relaxed text-white">{current?.q}</div>{current?.kind === "single" && <div className="mt-5 grid gap-3">{current.options.map(option => <button key={option} onClick={() => setChosen(option)} className={`rounded-2xl border p-4 text-left font-bold transition ${chosen === option ? "border-sky-500 bg-sky-50 ring-4 ring-sky-100" : "border-slate-200 bg-white hover:bg-slate-50"}`}>{option}</button>)}</div>}{current?.kind === "input" && <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === "Enter") submit(); }} placeholder="Lösung eingeben" className="mt-5 w-full rounded-2xl border border-slate-300 bg-white px-4 py-4 text-lg font-bold outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100" />}<div className="mt-6 flex justify-end"><Button variant="dark" onClick={submit}>Einloggen ⚡</Button></div></section></main>;
+    }
+
+    function Certificate({ profile, progress, onMenu }) {
+      const date = new Date().toLocaleDateString("de-DE");
+      return <main className="mx-auto max-w-5xl px-4 py-8"><section className="overflow-hidden rounded-[2rem] bg-white text-slate-950 shadow-2xl"><div className="bg-gradient-to-r from-sky-500 via-violet-500 to-emerald-400 p-2" /><div className="p-6 text-center sm:p-10"><div className="mx-auto grid h-24 w-24 place-items-center rounded-[2rem] bg-gradient-to-br from-yellow-300 to-amber-400 text-5xl shadow-xl">🏆</div><div className="mt-6 text-sm font-black uppercase tracking-[0.35em] text-slate-500">Zertifikat</div><h1 className="mt-3 text-4xl font-black sm:text-5xl">Mission Additio bestanden</h1><p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-700">Dieses Zertifikat bestätigt, dass</p><div className="mx-auto mt-4 max-w-2xl rounded-[2rem] border-4 border-slate-900 bg-slate-50 p-6"><div className="text-5xl">{profile.avatar}</div><div className="mt-3 text-4xl font-black">{profile.name}</div></div><p className="mx-auto mt-6 max-w-3xl text-lg leading-relaxed text-slate-700">den digitalen Lernpfad zum <span className="font-black text-slate-950">Additionsverfahren zum Lösen linearer Gleichungssysteme</span> erfolgreich bearbeitet hat.</p><div className="mt-8 grid gap-4 sm:grid-cols-3"><div className="rounded-3xl bg-slate-100 p-5"><div className="text-sm font-black text-slate-500">Level</div><div className="text-3xl font-black">{progress.completed.length}/10</div></div><div className="rounded-3xl bg-slate-100 p-5"><div className="text-sm font-black text-slate-500">XP</div><div className="text-3xl font-black">{progress.xp}</div></div><div className="rounded-3xl bg-slate-100 p-5"><div className="text-sm font-black text-slate-500">Datum</div><div className="text-3xl font-black">{date}</div></div></div><div className="mt-8 flex flex-col justify-center gap-3 print:hidden sm:flex-row"><Button variant="dark" onClick={() => window.print()}>Zertifikat drucken</Button><Button variant="light" onClick={onMenu}>Zurück zum Menü</Button></div></div></section></main>;
+    }
+
+    function TeacherMenu({ open, onClose, onUnlockAll, onSkip, onShowSolution }) {
+      const [password, setPassword] = useState(""), [authed, setAuthed] = useState(false), [error, setError] = useState("");
+      useEffect(() => { if (!open) { setPassword(""); setError(""); } }, [open]);
+      if (!open) return null;
+      function login() { if (TEACHER_PASSWORDS.includes(password.trim().toLowerCase())) { setAuthed(true); setError(""); } else setError("Passwort nicht korrekt."); }
+      return <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/70 p-4 backdrop-blur"><div className="w-full max-w-md rounded-[2rem] bg-white p-5 text-slate-950 shadow-2xl"><div className="flex items-center justify-between gap-3"><h2 className="text-2xl font-black">Lehrer-Menü</h2><button onClick={onClose} className="rounded-xl bg-slate-100 px-3 py-2 font-black hover:bg-slate-200">×</button></div>{!authed ? <div className="mt-5"><p className="text-sm text-slate-600">Passwort eingeben, um Zusatzfunktionen freizuschalten.</p><input type="password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => { if (e.key === "Enter") login(); }} className="mt-3 w-full rounded-2xl border border-slate-300 px-4 py-3 font-bold outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100" placeholder="Passwort" />{error && <div className="mt-2 text-sm font-bold text-rose-600">{error}</div>}<Button variant="dark" onClick={login} className="mt-4 w-full">Einloggen</Button></div> : <div className="mt-5 grid gap-3"><Button variant="dark" onClick={onUnlockAll}>Alle Level freischalten</Button><Button variant="light" onClick={onSkip}>Aktuelle Station überspringen</Button><Button variant="light" onClick={onShowSolution}>Lösung der aktuellen Aufgabe einblenden</Button></div>}</div></div>;
+    }
+
+    function App() {
+      const initial = useMemo(getInitialState, []);
+      const [profile, setProfile] = useState(initial.profile);
+      const [progress, setProgress] = useState(initial.progress);
+      const [view, setView] = useState(initial.profile ? "menu" : "welcome");
+      const [currentLevelId, setCurrentLevelId] = useState(1);
+      const [stepIndex, setStepIndex] = useState(0);
+      const [teacherOpen, setTeacherOpen] = useState(false);
+      const [teacherSolution, setTeacherSolution] = useState(false);
+      useEffect(() => { safeSave({ profile, progress }); }, [profile, progress]);
+      useEffect(() => { function key(e) { if (e.ctrlKey && e.altKey && e.key.toLowerCase() === "l") setTeacherOpen(true); } window.addEventListener("keydown", key); return () => window.removeEventListener("keydown", key); }, []);
+      function updateProgress(fn) { setProgress(old => typeof fn === "function" ? fn(old) : fn); }
+      function startProfile(newProfile) { setProfile(newProfile); setProgress({ unlocked: 1, completed: [], xp: 0, earnedTasks: [], bossBest: 0, certificateUnlocked: false }); setView("menu"); }
+      function startLevel(id) { setCurrentLevelId(id); setStepIndex(0); setTeacherSolution(false); setView("level"); }
+      function skipCurrent() { if (view !== "level") return; const level = LEVELS.find(l => l.id === currentLevelId); if (!level) return; if (stepIndex < level.steps.length) setStepIndex(stepIndex + 1); else { setProgress(old => ({ ...old, completed: Array.from(new Set([...(old.completed || []), level.id])), unlocked: Math.max(old.unlocked, level.id + 1) })); setView("menu"); } setTeacherSolution(false); }
+      const currentLevel = LEVELS.find(l => l.id === currentLevelId);
+      if (view === "welcome") return <Welcome onStart={startProfile} />;
+      return <><Header profile={profile} progress={progress} onMenu={() => setView("menu")} onTeacher={() => setTeacherOpen(true)} />{view === "menu" && <MainMenu profile={profile} progress={progress} onStartLevel={startLevel} onBoss={() => setView("boss")} onResetProfile={() => setView("welcome")} />}{view === "level" && currentLevel && <LevelView level={currentLevel} stepIndex={stepIndex} setStepIndex={(idx) => { setTeacherSolution(false); setStepIndex(idx); }} profile={profile} progress={progress} updateProgress={updateProgress} teacherSolution={teacherSolution} onBack={() => setView("menu")} onFinished={() => { setTeacherSolution(false); setView("menu"); }} />}{view === "boss" && <BossGame profile={profile} progress={progress} updateProgress={updateProgress} onMenu={() => setView("menu")} onCertificate={() => setView("certificate")} />}{view === "certificate" && <Certificate profile={profile} progress={progress} onMenu={() => setView("menu")} />}<TeacherMenu open={teacherOpen} onClose={() => setTeacherOpen(false)} onUnlockAll={() => setProgress(old => ({ ...old, unlocked: 11, completed: Array.from(new Set([...(old.completed || []), ...LEVELS.map(l => l.id)])), certificateUnlocked: true }))} onSkip={skipCurrent} onShowSolution={() => setTeacherSolution(true)} /></>;
+    }
+
+    createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
     @keyframes pulseAvatar {
       0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 0 rgba(56,189,248,.0)); }
       50% { transform: translateY(-4px) scale(1.05); filter: drop-shadow(0 0 14px rgba(56,189,248,.9)); }
