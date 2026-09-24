@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<title>Startklar · Dein Mathe-Basics-Check</title>
+<style>
+
+:root{--ink:#242926;--muted:#737a74;--line:#e3e7e1;--green:#31594a;--paper:#fff;--good:#286044;--red:#9b343d}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button{font:inherit;cursor:pointer;touch-action:manipulation}button:disabled{cursor:default;opacity:.45}button:focus-visible,summary:focus-visible{outline:2px solid var(--green);outline-offset:4px}[tabindex="-1"]:focus{outline:none}h1,h2,h3,p{margin:0}h1,h2,h3{line-height:1.2;letter-spacing:-.035em}svg{display:block}sup{font-size:.68em}header,.wrap{width:min(780px,calc(100% - 48px));margin:auto}header{display:flex;align-items:center;justify-content:space-between;padding:25px 0;border-bottom:1px solid var(--line)}.brand{font-size:23px;font-weight:750;letter-spacing:-.06em}.header-note{font-size:12px;color:var(--muted)}main{padding-bottom:48px}.start{max-width:580px;margin:100px auto 0}.start h1{font-size:clamp(38px,6vw,54px);font-weight:650}.intro{color:var(--muted);margin-top:15px;font-size:15px}.primary{border:1px solid var(--green);border-radius:8px;background:var(--green);color:white;padding:12px 22px;min-height:48px;font-weight:600}.primary:hover:not(:disabled){background:#244637}.start .primary{margin-top:30px}.subnote{font-size:12px;color:var(--muted);margin-top:13px}.topics{display:flex;flex-wrap:wrap;gap:8px;margin-top:38px;padding-top:25px;border-top:1px solid var(--line)}.topic{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:5px 9px}.quiz{max-width:700px;margin:35px auto 0}.quiz-top{display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:13px;color:var(--muted)}.quiz-top strong{color:var(--ink);font-weight:600}.quiet{background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:7px;padding:7px 12px;font-size:12px}.quiet:hover{color:var(--ink);border-color:#acb8ac}.progress{height:3px;background:#edf0eb;margin:15px 0 35px;overflow:hidden;border-radius:5px}.progress div{height:100%;background:var(--green)}.question-card{padding:0}.q-meta{margin-bottom:13px}.tag{font-size:12px;color:var(--muted)}.question-title{font-size:23px;font-weight:600;line-height:1.4;letter-spacing:-.02em}.expression{font-family:Georgia,"Times New Roman",serif;font-size:32px;margin:18px 0 8px;line-height:1.7;overflow-wrap:anywhere}.question-note{font-size:13px;color:var(--muted);margin-top:10px}.frac{display:inline-flex;vertical-align:middle;flex-direction:column;text-align:center;line-height:1.15;margin:0 .13em;font-size:.86em}.frac>span:first-child{border-bottom:1px solid currentColor;padding:0 .15em .1em}.frac>span:last-child{padding:.1em .15em 0}.answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:28px}.answer{background:white;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:17px;display:flex;align-items:center;gap:13px;text-align:left;min-height:76px;width:100%}.answer:hover:not(:disabled){border-color:var(--green)}.answer.selected{border-color:var(--green);background:#f2f6f2;box-shadow:0 0 0 1px var(--green)}.letter{display:grid;place-items:center;flex:0 0 24px;height:24px;border:1px solid var(--line);border-radius:5px;font:600 11px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--muted)}.selected .letter{background:var(--green);color:white;border-color:var(--green)}.answer-content{min-width:0;width:100%;font-family:Georgia,"Times New Roman",serif;font-size:23px;overflow-wrap:anywhere}.answer:disabled{opacity:1}.answer.correct{border-color:var(--good);background:#f1f7f0}.answer.wrong{border-color:var(--red);background:#fdf4f3}.answer.correct .letter{background:var(--good);color:white;border-color:var(--good)}.answer.wrong .letter{background:var(--red);color:white;border-color:var(--red)}.answer-status{display:block;font:500 11px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin-top:6px;color:var(--good)}.wrong .answer-status{color:var(--red)}.graph-answer{align-items:flex-start;padding:12px;gap:5px}.graph-answer .letter{margin-top:4px}.graph-answer .answer-content{font-size:18px}.graph{width:100%;height:auto;aspect-ratio:1;max-width:300px;margin:auto}.stem-graph{max-width:280px;margin:14px auto 0}.table-wrap{overflow-x:auto;margin:16px 0 7px}.values{border-collapse:collapse;width:100%;font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;text-align:center}.values th,.values td{padding:11px 8px;border:1px solid var(--line);white-space:nowrap}.values th{background:#f4f6f2;font-weight:600}.answer .table-wrap{margin:0}.answer .values{font-size:12px}.answer .values th,.answer .values td{padding:8px 4px}.feedback{margin-top:24px;padding:17px 19px;border-left:3px solid var(--good);background:#f5f8f3}.feedback.incorrect{border-color:#b77843;background:#faf6f0}.feedback strong{font-size:14px}.feedback p{font-size:14px;line-height:1.8;margin-top:6px}.actions{display:flex;justify-content:flex-end;margin-top:24px}.result{padding-top:48px}.result-top{display:flex;flex-direction:column-reverse;align-items:flex-start;gap:16px}.score-num{font-size:72px;font-weight:650;letter-spacing:-.06em;line-height:1}.score-num span{font-size:26px;font-weight:400;color:var(--muted);letter-spacing:-.02em}.result h1{font-size:clamp(26px,4vw,36px);max-width:620px}.result .primary{margin-top:24px}.summary{margin-top:35px;border-top:1px solid var(--line)}.panel{border-bottom:1px solid var(--line);padding:0 0 2px}.panel>summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;list-style:none;padding:17px 0;font-size:14px;font-weight:600}.panel>summary:after{content:"+";font-size:20px;color:var(--muted);font-weight:400}.panel[open]>summary:after{content:"−"}.panel>summary::-webkit-details-marker{display:none}.panel-content{padding:0 0 16px}.label-small{font-size:11px;color:var(--muted)}.topic-row{display:flex;justify-content:space-between;align-items:center;gap:15px;font-size:13px;padding:8px 0}.topic-row strong{font-size:13px;font-weight:500}.recommend{padding:10px 0}.recommend strong{font-size:13px;font-weight:600}.recommend p{font-size:13px;color:var(--muted);margin-top:4px;max-width:600px}.review{margin-top:32px}.review>h2{font-size:19px;margin-bottom:13px;letter-spacing:-.02em;font-weight:600}.review details{border-bottom:1px solid var(--line)}.review summary{cursor:pointer;display:flex;align-items:center;gap:12px;padding:15px 0;font-size:13px;list-style:none}.review summary::-webkit-details-marker{display:none}.review summary:after{content:"+";margin-left:auto;font-size:20px;color:var(--muted)}.review details[open] summary:after{content:"−"}.badge{width:22px;height:22px;display:grid;place-items:center;color:var(--good);background:#eef5eb;border-radius:5px;flex-shrink:0}.badge.no{color:var(--red);background:#f9eeed}.review-body{padding:6px 0 22px;font-size:14px}.review-body .expression{font-size:26px}.review-answer{margin:15px 0;display:grid;grid-template-columns:1fr 1fr;gap:15px}.review-answer>div{padding:13px;border:1px solid var(--line);border-radius:8px;min-width:0}.review-answer small{display:block;color:var(--muted);margin-bottom:8px}.review-answer .graph{max-width:180px}.review-explain{padding:13px;background:#f5f7f2;border-radius:7px;line-height:1.8}.dialog-back{position:fixed;inset:0;background:#13241f55;display:grid;place-items:center;z-index:10;padding:22px}.dialog{max-width:410px;background:white;border-radius:12px;padding:27px}.dialog h2{font-size:23px}.dialog p{color:var(--muted);font-size:14px;margin:13px 0 24px}.dialog-buttons{display:flex;gap:12px;justify-content:flex-end}.dialog-buttons .quiet{font-size:14px}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}[hidden]{display:none!important}
+@media(max-width:600px){header,.wrap{width:calc(100% - 36px)}header{padding:20px 0}.brand{font-size:21px}.start{margin-top:65px}.start h1{font-size:39px}.intro{font-size:14px}.start .primary{width:100%;margin-top:27px}.topics{margin-top:30px;gap:7px}.topic{font-size:11px;padding:4px 8px}.quiz{margin-top:25px}.question-title{font-size:21px}.expression{font-size:29px}.answers{gap:9px}.answer{padding:13px 10px;gap:8px;min-height:70px}.answer-content{font-size:21px}.letter{flex-basis:22px;height:22px}.table-answers,.graph-answers{grid-template-columns:1fr}.graph-answer{padding:12px;gap:8px}.graph-answer .letter{margin-top:6px}.values{font-size:14px}.actions .primary{width:100%}.feedback{padding:14px}.feedback p{font-size:13px}.result{padding-top:35px}.score-num{font-size:62px}.result .primary{width:100%}.result-top>div{width:100%}.review-answer{grid-template-columns:1fr}.dialog-buttons{flex-direction:column}.dialog-buttons .quiet{padding:12px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}@media print{header,.primary{display:none}.wrap{width:100%}.review details,.panel{break-inside:avoid}.review details .review-body,.panel .panel-content{display:block}}
+</style>
+</head>
+<body>
+<header><div class="brand">startklar.</div><span class="header-note">Mathe · EF-Basics</span></header>
+<main id="app" class="wrap"></main>
+<div id="live" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<noscript><p style="padding:24px">Für diesen Mathe-Check muss JavaScript im Browser aktiviert sein.</p></noscript>
+<script>
+'use strict';
+/* Exact arithmetic, stable answer identities, deterministic task generation. */
+const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
+function R(n,d=1){if(!d)throw Error('Nenner null');if(d<0){n=-n;d=-d}const g=gcd(n,d);return {n:n/g,d:d/g}}
+const rkey=r=>`${r.n}/${r.d}`;
+const add=(a,b)=>R(a.n*b.d+b.n*a.d,a.d*b.d);
+const sub=(a,b)=>R(a.n*b.d-b.n*a.d,a.d*b.d);
+const mul=(a,b)=>R(a.n*b.n,a.d*b.d);
+const div=(a,b)=>R(a.n*b.d,a.d*b.n);
+const minus=s=>String(s).replace(/-/g,'−');
+function frac(r){return r.d===1?minus(r.n):`${r.n<0?'−':''}<span class="frac" aria-label="${minus(r.n)} durch ${r.d}"><span aria-hidden="true">${Math.abs(r.n)}</span><span aria-hidden="true">${r.d}</span></span>`}
+function dec(n){return minus((n/100).toFixed(2).replace(/0+$/,'').replace(/\.$/,'').replace('.',','))}
+const par=n=>n<0?`(${minus(n)})`:String(n);
+const dr=n=>n<0?`(${dec(n)})`:dec(n);
+function poly(c,variable='x'){let out='';for(let i=c.length-1;i>=0;i--){const n=c[i];if(!n)continue;let term=i?(Math.abs(n)===1?'':Math.abs(n))+variable+(i>1?`<sup>${i}</sup>`:''):String(Math.abs(n));out+=(out?(n<0?' − ':' + '):(n<0?'−':''))+term}return out||'0'}
+function pkey(c){const a=c.slice();while(a.length>1&&a.at(-1)===0)a.pop();return a.join(',')}
+const evaluate=(c,x)=>c.reduceRight((v,a)=>v*x+a,0);
+const numeric=r=>({key:rkey(r),value:r,html:frac(r)});
+const decimal=n=>({key:rkey(R(n,100)),value:R(n,100),html:dec(n)});
+const polynomial=c=>({key:pkey(c),value:c,html:poly(c)});
+const power=n=>({key:String(n),value:n,html:n===0?'1':n===1?'a':`a<sup>${minus(n)}</sup>`});
+const textChoice=(key,html)=>({key:String(key),value:key,html});
+const xs=[-2,-1,0,1,2];
+function tableHTML(inputs,values,label='f(x)'){return `<div class="table-wrap"><table class="values"><tbody><tr><th scope="row">x</th>${inputs.map(x=>`<td>${minus(x)}</td>`).join('')}</tr><tr><th scope="row">${label}</th>${values.map(y=>`<td>${y==='?'?'<strong>?</strong>':minus(y)}</td>`).join('')}</tr></tbody></table></div>`}
+let graphSerial=0;
+function graph(c){
+ const id='g'+(++graphSerial), px=x=>150+x*25,py=y=>150-y*25;
+ const points=Array.from({length:301},(_,i)=>{const x=-6+i/25;return `${i?'L':'M'}${px(x).toFixed(2)},${py(evaluate(c,x)).toFixed(2)}`}).join(' ');
+ const ticks=Array.from({length:13},(_,i)=>i-6);const label=`Koordinatensystem von −6 bis 6. Kurve durch ${[-2,-1,0,1,2].map(x=>`(${x}; ${evaluate(c,x)})`).join(', ')}.`;
+ return `<svg class="graph" viewBox="0 0 300 300" role="img" aria-labelledby="${id}title"><title id="${id}title">${label}</title><defs><clipPath id="${id}clip"><rect x="16" y="16" width="268" height="268"/></clipPath></defs><rect width="300" height="300" rx="10" fill="#fffefa"/><g clip-path="url(#${id}clip)">${ticks.map(n=>`<path d="M${px(n)},16V284 M16,${py(n)}H284" stroke="#e8ebdf" stroke-width="1"/>`).join('')}<path d="M16,150H284 M150,16V284" stroke="#919a8d" stroke-width="1.3"/><path d="M278,146L284,150L278,154 M146,22L150,16L154,22" fill="none" stroke="#919a8d"/><path d="${points}" fill="none" stroke="#31594a" stroke-width="3.3" stroke-linecap="round"/></g><g font-size="11" fill="#626b66" font-family="sans-serif">${[-4,-2,2,4].map(n=>`<text x="${px(n)}" y="165" text-anchor="middle">${minus(n)}</text><text x="140" y="${py(n)+4}" text-anchor="end">${minus(n)}</text>`).join('')}<text x="139" y="165">0</text><text x="286" y="143">x</text><text x="158" y="20">y</text></g></svg>`
+}
+const TOPICS=[
+ {name:'Dezimalzahlen',symbol:'±',tip:'Rechne stellenweise und beachte die Vorzeichen. Beim Abziehen einer negativen Zahl wird daraus ein Plus.'},
+ {name:'Brüche + und −',symbol:'½',tip:'Bringe die Brüche auf einen gemeinsamen Nenner. Addiere oder subtrahiere dann nur die Zähler und kürze.'},
+ {name:'Brüche × und ÷',symbol:'⅔',tip:'Beim Multiplizieren: Zähler mal Zähler, Nenner mal Nenner. Beim Dividieren drehst du den zweiten Bruch um.'},
+ {name:'Potenzgesetze',symbol:'aⁿ',tip:'Gleiche Basis: beim Multiplizieren Exponenten addieren, beim Dividieren subtrahieren. Bei einer Potenz von einer Potenz multiplizieren.'},
+ {name:'Terme umformen',symbol:'(x)',tip:'Löse Klammern sorgfältig auf. Fasse nur gleichartige Terme zusammen und achte auf jedes Minuszeichen.'},
+ {name:'Gleichungen',symbol:'=',tip:'Führe dieselbe Rechenoperation auf beiden Seiten aus. Setze deine Lösung zum Prüfen wieder ein.'},
+ {name:'Werttabellen',symbol:'↦',tip:'Setze jeden x-Wert in den Term ein. Negative Werte gehören beim Potenzieren in Klammern.'},
+ {name:'Graphen',symbol:'↗',tip:'Vergleiche markante Punkte, den y-Achsenabschnitt und den Verlauf. Bei Geraden hilft dir zusätzlich die Steigung.'}
+];
+const POOL=[];const BUILD_ERRORS=[];
+/* Each task records its expected semantic answer independently of option order. */
+function put(cat,type,i,prompt,body,correct,wrong,explanation,meta={}){
+ const options=[correct,...wrong];
+ if(options.length!==4||new Set(options.map(o=>o.key)).size!==4){BUILD_ERRORS.push(`${cat}-${type}-${i}: doppelte Antwort`);return}
+ const id=`v1-${cat}-${type}-${i}`;
+ POOL.push({id,cat,type,level:[1,1,2,2,3,1,2,2,1,3][i%10],prompt,body,options:options.map((o,j)=>({...o,id:`${id}-a${j}`})),correctKey:correct.key,correctId:`${id}-a0`,explanation,meta});
+}
+function rationalOptions(correct,candidates){const seen=new Set([rkey(correct)]),result=[];for(const r of [...candidates,...[1,-1,2,-2,3].map(n=>add(correct,R(n)))]){if(!seen.has(rkey(r))){seen.add(rkey(r));result.push(numeric(r))}if(result.length===3)break}return result}
+function numberOptions(n,candidates){return rationalOptions(R(n),candidates.map(x=>R(x)))}
+function polyOptions(correct,candidates){const seen=new Set([pkey(correct)]),result=[];const fallbacks=[1,-1,2,-2].map(k=>{const c=correct.slice();c[0]=(c[0]||0)+k;return c});for(const c of [...candidates,...fallbacks]){if(!seen.has(pkey(c))){seen.add(pkey(c));result.push(polynomial(c))}if(result.length===3)break}return result}
+function makePool(){
+ // 40 tasks per category: four formats, ten variants. 320 validated tasks in total.
+ for(let i=0;i<10;i++){
+  const a=125+115*i,b=68+79*i;
+  for(let t=0;t<4;t++){
+   const A=t===1?-a:a,B=t===3?-b:b,op=t===0||t===1?'+':'−',n=op==='+'?A+B:A-B;
+   const candidates=[op==='+'?A-B:A+B,-n,n+10,n-100,n+100];
+   const seen=new Set([n]);const wrong=[];for(const c of candidates)if(!seen.has(c)){seen.add(c);wrong.push(decimal(c));if(wrong.length===3)break}
+   const explain=t===3?`Eine negative Zahl abzuziehen heißt, die positive Zahl zu addieren: ${dec(A)} + ${dec(-B)} = ${dec(n)}.`:t===1?`Die Vorzeichen sind verschieden. Vergleiche die Beträge: ${dec(a)} ist größer als ${dec(b)}. Die Differenz ist ${dec(a-b)}, das Ergebnis also ${dec(n)}.`:`Rechne mit gleich vielen Nachkommastellen. In Hundertsteln: ${A} ${op} ${B} = ${n}. Das sind ${dec(n)}.`;
+   put(0,t,i,'Rechne im Kopf.',`<div class="expression">${dec(A)} ${op} ${dr(B)} = ?</div>`,decimal(n),wrong,explain,{kind:'decimal',a:A,b:B,op,result:n});
+  }
+  const denominators=[3,4,5,6,7,8,9,10,11,12];
+  for(let t=0;t<4;t++){
+   const d=denominators[i],e=t<2?d:[2,3,4,3,2,6,4,4,2,8][i];
+   const A=R((i%4)+1,d),B=R((i%3)+1,e),negative=t===3;
+   const left=negative?R(-A.n,A.d):A,op=t===1||t===3?'−':'+',C=op==='+'?add(left,B):sub(left,B);
+   const wrong=rationalOptions(C,[R(left.n+(op==='+'?B.n:-B.n),left.d+B.d),op==='+'?sub(left,B):add(left,B),R(-C.n,C.d),R(left.n+B.n,left.d)]);
+   const common=left.d*B.d/gcd(left.d,B.d),an=left.n*(common/left.d),bn=B.n*(common/B.d);
+   put(1,t,i,'Welches Ergebnis ist richtig?',`<div class="expression">${frac(left)} ${op} ${frac(B)} = ?</div>`,numeric(C),wrong,`Der gemeinsame Nenner ist ${common}. Rechne die Zähler: ${minus(an)} ${op} ${bn} = ${minus(op==='+'?an+bn:an-bn)}. Nach dem Kürzen ergibt sich ${frac(C)}.`,{kind:'rational',a:left,b:B,op,result:C});
+  }
+  for(let t=0;t<4;t++){
+   const A=R((t===2?-1:1)*(i%5+1),i%4+3),B=R(i%3+2+(t===3?1:0),i%5+3),op=t%2===0?'·':':',C=op==='·'?mul(A,B):div(A,B);
+   const wrong=rationalOptions(C,[op==='·'?div(A,B):mul(A,B),add(A,B),R(-C.n,C.d),R(C.d,C.n||1)]);
+   put(2,t,i,t===2?'Achte auf das Vorzeichen.':t===3?'Welcher Bruch fehlt im Kästchen?':'Berechne und kürze.',`<div class="expression">${t===3?`${frac(A)} : □ = ${frac(B)}`:`${frac(A)} ${op} ${frac(B)} = ?`}</div>`,numeric(C),wrong,t===3?`Aus ${frac(A)} : □ = ${frac(B)} folgt □ = ${frac(A)} : ${frac(B)} = ${frac(C)}. Prüfe durch Einsetzen: ${frac(A)} : ${frac(C)} = ${frac(B)}.`:op==='·'?`Multipliziere Zähler mit Zähler und Nenner mit Nenner: ${minus(A.n)} · ${B.n} = ${minus(A.n*B.n)} und ${A.d} · ${B.d} = ${A.d*B.d}. Gekürzt: ${frac(C)}.`:`Multipliziere mit dem Kehrwert des zweiten Bruchs: ${frac(A)} · ${frac(R(B.d,B.n))} = ${frac(C)}.`,{kind:'rational',a:A,b:B,op,result:C});
+  }
+  for(let t=0;t<4;t++){
+   const m=i+2,n=i%3+2;
+   if(t<3){const e=t===0?m+n:t===1?m-n:m*n;
+    const body=t===0?`a<sup>${m}</sup> · a<sup>${n}</sup>`:t===1?`a<sup>${m}</sup> : a<sup>${n}</sup>`:`(a<sup>${m}</sup>)<sup>${n}</sup>`;
+    const wrong=[e+1,e-1,e+2].map(power);
+    const rule=t===0?`Beim Multiplizieren gleicher Basen werden die Exponenten addiert: ${m} + ${n} = ${e}.`:t===1?`Beim Dividieren gleicher Basen werden die Exponenten subtrahiert: ${m} − ${n} = ${e}. ${e===0?'Jede von null verschiedene Zahl hoch 0 ist 1.':''}`:`Eine Potenz potenzieren heißt, die Exponenten zu multiplizieren: ${m} · ${n} = ${e}.`;
+    put(3,t,i,'Vereinfache mit dem passenden Potenzgesetz.',`<div class="expression">${body}</div><p class="question-note">Es gilt a ≠ 0. Gesucht ist ein für alle zulässigen a gleichwertiger Term.</p>`,power(e),wrong,rule,{kind:'power',m,n,t,result:e});
+   }else{
+    const k=i+2,signTask=i%3===0,reciprocal=i%3===1;
+    const body=signTask?`−${k}<sup>2</sup>`:reciprocal?`${k}<sup>−2</sup>`:`(−${k})<sup>2</sup>`;
+    const C=signTask?R(-k*k):reciprocal?R(1,k*k):R(k*k);
+    put(3,t,i,'Welche Zahl ist das?',`<div class="expression">${body} = ?</div>`,numeric(C),rationalOptions(C,[R(-C.n,C.d),R(2*k),R(1,k),R(k*k)]),signTask?`Die Potenz wird zuerst berechnet: −${k}<sup>2</sup> = −(${k} · ${k}) = ${minus(-k*k)}. Das Minus steht außerhalb der Potenz.`:reciprocal?`Ein negativer Exponent bildet den Kehrwert: ${k}<sup>−2</sup> = 1 / ${k}<sup>2</sup> = ${frac(C)}.`:`Die negative Zahl steht in Klammern und wird mit sich selbst multipliziert: (−${k}) · (−${k}) = ${k*k}.`,{kind:'power-number',k,signTask,reciprocal,result:C});
+   }
+  }
+  for(let t=0;t<4;t++){
+   const a=i%4+2,b=i+2,c=i%3+1;let C,body,explain,prompt='Welcher Term ist gleichwertig?';
+   if(t===0){C=[b-c,a+2];body=`${a}x + ${b} + 2x − ${c}`;explain=`Fasse die x-Terme und die Zahlen getrennt zusammen: (${a} + 2)x + (${b} − ${c}) = ${poly(C)}.`}
+   if(t===1){C=[-a*b,a];body=`${a}(x − ${b})`;explain=`Multipliziere beide Terme in der Klammer mit ${a}: ${a} · x − ${a} · ${b} = ${poly(C)}.`}
+   if(t===2){C=[b+c,a-1];body=`${a}x − (x − ${b}) + ${c}`;explain=`Das Minus vor der Klammer kehrt beide Vorzeichen um: ${a}x − x + ${b} + ${c} = ${poly(C)}.`}
+   if(t===3){C=[b*b,2*b,1];body=`(x + ${b})<sup>2</sup>`;explain=`Nutze (u + v)² = u² + 2uv + v²: x² + 2 · ${b} · x + ${b}² = ${poly(C)}.`}
+   put(4,t,i,prompt,`<div class="expression">${body}</div>`,polynomial(C),polyOptions(C,t===3?[[b*b,0,1],[b,2*b,1],[b*b,b,1]]:[[C[0]*-1,C[1]],[C[0],C[1]+1],[b,a]]),explain,{kind:'term',t,a,b,c,result:C});
+  }
+  for(let t=0;t<4;t++){
+   const x=i-4,a=i%4+2,b=i+1;let body,explain,meta;
+   if(t===0){const rhs=a*x+b;body=`${a}x + ${b} = ${minus(rhs)}`;explain=`Ziehe auf beiden Seiten ${b} ab: ${a}x = ${minus(a*x)}. Teile dann durch ${a}: x = ${minus(x)}.`;meta={kind:'equation',left:[b,a],right:[rhs],result:x}}
+   if(t===1){const rhs=a*(x-b);body=`${a}(x − ${b}) = ${minus(rhs)}`;explain=`Teile beide Seiten durch ${a}: x − ${b} = ${minus(x-b)}. Addiere ${b}: x = ${minus(x)}.`;meta={kind:'equation',left:[-a*b,a],right:[rhs],result:x}}
+   if(t===2){const c=a-1,d=x+b;body=`${a}x + ${b} = ${c===1?'':c}x + ${d}`;explain=`Ziehe ${c===1?'x':c+'x'} und anschließend ${b} auf beiden Seiten ab: (${a} − ${c})x = ${d} − ${b}. Also x = ${minus(x)}.`;meta={kind:'equation',left:[b,a],right:[d,c],result:x}}
+   if(t===3){const rhs=x/a+b,C=R(x,a);body=`<span class="frac"><span>x</span><span>${a}</span></span> + ${b} = ${frac(add(C,R(b)))}`;explain=`Ziehe ${b} ab: x / ${a} = ${frac(C)}. Multipliziere anschließend beide Seiten mit ${a}: x = ${minus(x)}.`;meta={kind:'equation-fraction',a,b,rhs:add(C,R(b)),result:x}}
+   put(5,t,i,'Löse die Gleichung nach x auf.',`<div class="expression">${body}</div>`,{...numeric(R(x)),html:`x = ${minus(x)}`},numberOptions(x,[-x,x+1,x-1,x+2]).map(o=>({...o,html:`x = ${o.html}`})),explain,meta);
+  }
+  for(let t=0;t<4;t++){
+   const c=t===0?[i-4,i%3+1]:t===1?[i-5,0,i%2?-1:1]:t===2?[i-5,i%2,0,1]:[i-4,i%3+1];
+   const x=i%5-2,y=evaluate(c,x),ys=xs.map(v=>evaluate(c,v));
+   if(t<3){const index=xs.indexOf(x),shown=ys.slice();shown[index]='?';
+    put(6,t,i,`Welcher Wert fehlt bei x = ${minus(x)}?`,`<div class="expression">f(x) = ${poly(c)}</div>${tableHTML(xs,shown)}`,numeric(R(y)),numberOptions(y,[-y,y+1,y-2,y+2]),`Setze x = ${minus(x)} ein. ${t===1||t===2?'Setze negative Zahlen dabei in Klammern und berechne zuerst die Potenzen. ':''}So erhältst du f(${minus(x)}) = ${minus(y)}. Die vollständige Zeile lautet: ${ys.map(minus).join('; ')}.`,{kind:'table-value',c,x,result:y});
+   }else{const candidates=[ys.map(v=>v+1),ys.map(v=>v-1),ys.map((v,j)=>v+(j%2?1:-1))];const choice=v=>({key:v.join(','),value:v,html:tableHTML(xs,v)});
+    put(6,t,i,'Welche Wertetabelle passt?',`<div class="expression">f(x) = ${poly(c)}</div>`,choice(ys),candidates.map(choice),`Setze die x-Werte −2, −1, 0, 1 und 2 nacheinander ein. Die passenden Funktionswerte sind ${ys.map(minus).join('; ')}.`,{kind:'table-select',c,xs,result:ys,table:true});
+   }
+  }
+  for(let t=0;t<4;t++){
+   const c=t===0?[i%5-2,(i%2?-1:1)*(i%3+1)]:t===1?[i%5-2,0,i%2?-1:1]:t===2?[i%5-2,i%2?2:-1]:i%3===0?[i-4,0,0,1]:[i%5-2,0,i%2?-1:1];
+   const alternatives=polyOptions(c,[[c[0]+1,...c.slice(1)],[c[0]-1,...c.slice(1)],c.map((v,j)=>j?-v:v)]);
+   if(t===0||t===3){const choice=p=>({key:pkey(p),value:p,html:graph(p)});
+    put(7,t,i,t===0?'Welcher Graph gehört zur Funktion?':'Welcher Graph passt zur Wertetabelle?',t===0?`<div class="expression">f(x) = ${poly(c)}</div>`:tableHTML(xs,xs.map(x=>evaluate(c,x))),choice(c),alternatives.map(o=>choice(o.value)),t===0?`Die Gerade schneidet die y-Achse bei ${minus(c[0])}. Ihre Steigung ist ${minus(c[1])}: Gehst du 1 nach rechts, ändert sich y um ${minus(c[1])}.`:`Die Punkte aus der Tabelle liegen auf dem Graphen von f(x) = ${poly(c)}. Prüfe zum Beispiel (0 | ${evaluate(c,0)}) und (1 | ${evaluate(c,1)}).`,{kind:'graph',c,result:c,graph:true});
+   }else if(t===1){put(7,t,i,'Welcher Funktionsterm passt zum Graphen?',`<div class="stem-graph">${graph(c)}</div>`,{...polynomial(c),html:`f(x) = ${poly(c)}`},alternatives.map(o=>({...o,html:`f(x) = ${o.html}`})),`Die Parabel ist nach ${c[2]>0?'oben':'unten'} geöffnet. Ihr Scheitel liegt bei (0 | ${minus(c[0])}). Deshalb passt f(x) = ${poly(c)}.`,{kind:'graph',c,result:c})}
+   else{const x=i%5-2,y=evaluate(c,x),choice=v=>({key:`${x},${v}`,value:[x,v],html:`P(${minus(x)} | ${minus(v)})`});
+    put(7,t,i,'Welchen Punkt kannst du zum Zeichnen eintragen?',`<div class="expression">f(x) = ${poly(c)}</div><p class="question-note">Genau einer dieser Punkte liegt auf dem Graphen.</p>`,choice(y),[y+1,y-1,y+2].map(choice),`Setze die x-Koordinate ${minus(x)} ein: f(${minus(x)}) = ${minus(y)}. Der passende Punkt ist P(${minus(x)} | ${minus(y)}).`,{kind:'point',c,x,result:y});
+   }
+  }
+ }
+ // Further formats complement the four core formats: formulas, factoring and product powers.
+ for(let i=0;i<10;i++){
+  const a=i%4+2,b=i+2;
+  const C=[a*b,a];
+  put(4,4,i,'Welcher ausgeklammerte Term ist gleichwertig?',`<div class="expression">${poly(C)}</div>`,{key:pkey(C),value:C,html:`${a}(x + ${b})`},[
+   {key:pkey([b,a]),value:[b,a],html:`${a}x + ${b}`},
+   {key:pkey([-a*b,a]),value:[-a*b,a],html:`${a}(x − ${b})`},
+   {key:pkey([a*b,a*b]),value:[a*b,a*b],html:`${a*b}(x + 1)`}
+  ],`Beide Summanden enthalten den Faktor ${a}. Klammere ihn aus: ${a}x + ${a*b} = ${a}(x + ${b}). Zur Kontrolle kannst du wieder ausmultiplizieren.`,{kind:'factor',result:C});
+  put(5,4,i,'Stelle die Formel nach x um.',`<div class="expression">y = ${a}x + ${b}</div>`,textChoice('correct',`x = <span class="frac"><span>y − ${b}</span><span>${a}</span></span>`),[
+   textChoice('plus',`x = <span class="frac"><span>y + ${b}</span><span>${a}</span></span>`),textChoice('multiply',`x = ${a}(y − ${b})`),textChoice('outside',`x = <span class="frac"><span>y</span><span>${a}</span></span> − ${b}`)
+  ],`Ziehe zuerst ${b} auf beiden Seiten ab: y − ${b} = ${a}x. Teile dann beide Seiten durch ${a}. Damit ist x = (y − ${b}) / ${a}.`,{kind:'formula',a,b,result:'correct'});
+  const n=i%3+2,k=i+2;
+  const correct=textChoice(`${k**n},${n}`,`${k**n}a<sup>${n}</sup>`);
+  put(3,4,i,'Potenziere das gesamte Produkt.',`<div class="expression">(${k}a)<sup>${n}</sup></div>`,correct,[textChoice(`${k},${n}`,`${k}a<sup>${n}</sup>`),textChoice(`${k**n},1`,`${k**n}a`),textChoice(`${k**n},${n+1}`,`${k**n}a<sup>${n+1}</sup>`)],`Die Potenz gilt für beide Faktoren: (${k}a)<sup>${n}</sup> = ${k}<sup>${n}</sup> · a<sup>${n}</sup> = ${k**n}a<sup>${n}</sup>.`,{kind:'product-power',k,n,result:`${k**n},${n}`});
+ }
+}
+function expectedKey(q){const m=q.meta;
+ switch(m.kind){
+  case'decimal':return rkey(R(m.op==='+'?m.a+m.b:m.a-m.b,100));
+  case'rational':return rkey(({'+':add,'−':sub,'·':mul,':':div}[m.op])(m.a,m.b));
+  case'power':return String(m.t===0?m.m+m.n:m.t===1?m.m-m.n:m.m*m.n);
+  case'power-number':return rkey(m.signTask?R(-m.k*m.k):m.reciprocal?R(1,m.k*m.k):R(m.k*m.k));
+  case'term':return pkey(m.t===0?[m.b-m.c,m.a+2]:m.t===1?[-m.a*m.b,m.a]:m.t===2?[m.b+m.c,m.a-1]:[m.b*m.b,2*m.b,1]);
+  case'factor':return pkey(m.result);
+  case'equation':return rkey(R((m.right[0]||0)-(m.left[0]||0),(m.left[1]||0)-(m.right[1]||0)));
+  case'equation-fraction':return rkey(mul(sub(m.rhs,R(m.b)),R(m.a)));
+  case'formula':return 'correct';
+  case'product-power':return `${m.k**m.n},${m.n}`;
+  case'table-value':return rkey(R(evaluate(m.c,m.x)));
+  case'table-select':return m.xs.map(x=>evaluate(m.c,x)).join(',');
+  case'graph':return pkey(m.c);
+  case'point':return `${m.x},${evaluate(m.c,m.x)}`;
+  default:throw Error('Unbekannter Aufgabentyp');
+ }
+}
+function validatePool(pool){const ids=new Set(),errors=[];const valid=pool.filter(q=>{try{
+ const expected=expectedKey(q);if(ids.has(q.id))throw Error('doppelte ID');ids.add(q.id);
+ if(q.options.length!==4||new Set(q.options.map(o=>o.key)).size!==4)throw Error('Antworten nicht eindeutig');
+ if(q.options.filter(o=>o.key===expected).length!==1||q.correctKey!==expected||q.options.find(o=>o.id===q.correctId)?.key!==expected)throw Error('falsche Lösung');
+ if(!q.explanation||!q.prompt)throw Error('fehlender Inhalt');
+ if(q.meta.kind==='decimal'&&[q.meta.a,q.meta.b,q.meta.result].some(x=>Math.abs(x)>2000))throw Error('Zahlenraum überschritten');
+ return true;
+ }catch(e){errors.push(`${q.id}: ${e.message}`);return false}});return {valid,errors}}
+makePool();
+const validation=validatePool(POOL),QUESTIONS=validation.valid;
+const counts=TOPICS.map((_,cat)=>QUESTIONS.filter(q=>q.cat===cat).length);
+if(BUILD_ERRORS.length||validation.errors.length)console.error('Ungültige Aufgaben ausgeschlossen:',BUILD_ERRORS,validation.errors);
+
+/* Balanced sampling: 8 required categories plus 2 distinct extras; 4/4/2 levels. */
+function shuffle(items){const a=items.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const STORAGE_KEY='startklar-rounds-v1';
+function readHistory(){try{const a=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');return Array.isArray(a)?a.filter(r=>Array.isArray(r)&&r.every(x=>typeof x==='string')).slice(-3):[]}catch{return []}}
+let history=readHistory();
+function selectRound(previous=history){
+ const recent=new Set(previous.flat()),extra=shuffle(TOPICS.map((_,i)=>i)).slice(0,2),cats=shuffle([...TOPICS.map((_,i)=>i),...extra]);
+ const levels=shuffle([1,1,1,1,2,2,2,2,3,3]),used=new Set();
+ return shuffle(cats.map((cat,i)=>{
+  let available=QUESTIONS.filter(q=>q.cat===cat&&!used.has(q.id));
+  let candidates=available.filter(q=>q.level===levels[i]&&!recent.has(q.id));
+  if(!candidates.length)candidates=available.filter(q=>q.level===levels[i]);
+  if(!candidates.length)candidates=available.filter(q=>!recent.has(q.id));
+  if(!candidates.length)candidates=available;
+  const q=candidates[Math.floor(Math.random()*candidates.length)];if(!q)throw Error('Aufgabenpool unvollständig');used.add(q.id);
+  return {...q,options:shuffle(q.options)};
+ }));
+}
+function saveHistory(ids){history=[...history,ids].slice(-3);try{localStorage.setItem(STORAGE_KEY,JSON.stringify(history))}catch{/* Offline/private modes still work. */}}
+const app=document.getElementById('app'),live=document.getElementById('live');
+let state={screen:'start',round:[],index:0,selected:null,answers:[],submitted:false};
+const score=()=>state.answers.filter(a=>a.correct).length;
+function announce(s){live.textContent=s}
+function focusHeading(){const h=app.querySelector('[data-focus]');if(h){h.focus({preventScroll:true})}window.scrollTo({top:0,behavior:'instant'})}
+function renderStart(){state.screen='start';app.innerHTML=`<section class="start"><h1>Mathe-Basics.</h1><p class="intro">10 Fragen · 8 Themen · Ohne Zeitlimit</p><button class="primary" id="start">Runde starten</button><p class="subnote">Ohne Taschenrechner. Nebenrechnung erlaubt.</p><div class="topics" aria-label="Themenbereiche">${TOPICS.map(t=>`<span class="topic">${t.name}</span>`).join('')}</div></section>`;
+ document.getElementById('start').onclick=startRound;
+ if(QUESTIONS.length<200||counts.some(n=>n<25)){document.getElementById('start').disabled=true;app.insertAdjacentHTML('afterbegin','<p role="alert">Der Aufgabenpool konnte nicht vollständig geladen werden. Bitte öffne die unveränderte HTML-Datei erneut.</p>')}
+}
+function startRound(){state={screen:'quiz',round:selectRound(),index:0,selected:null,answers:[],submitted:false};saveHistory(state.round.map(q=>q.id));renderQuestion();focusHeading()}
+function renderQuestion(){const q=state.round[state.index],submitted=state.submitted,answer=state.answers[state.index];
+ app.innerHTML=`<section class="quiz"><div class="quiz-top"><span><strong>${state.index+1}</strong> / 10</span><button class="quiet" id="exit">Runde beenden</button></div><div class="progress" role="progressbar" aria-label="Beantwortete Fragen" aria-valuemin="0" aria-valuemax="10" aria-valuenow="${state.answers.length}"><div style="width:${state.answers.length*10}%"></div></div><div class="question-card"><div class="q-meta"><span class="tag">${TOPICS[q.cat].name}</span></div><h2 class="question-title" id="question" tabindex="-1" data-focus>${q.prompt}</h2>${q.body}<div class="answers ${q.meta.graph?'graph-answers':''} ${q.meta.table?'table-answers':''}" role="group" aria-labelledby="question">${q.options.map((o,i)=>{
+  const chosen=o.id===state.selected,right=o.id===q.correctId;let cls=chosen?' selected':'';
+  if(submitted)cls=right?' correct':chosen?' wrong':'';
+  return `<button type="button" class="answer${cls}${q.meta.graph?' graph-answer':''}" data-answer="${o.id}" aria-pressed="${chosen}" ${submitted?'disabled':''}><span class="letter" aria-hidden="true">${submitted&&right?'✓':submitted&&chosen?'×':String.fromCharCode(65+i)}</span><span class="answer-content">${o.html}${submitted&&(right||chosen)?`<span class="answer-status">${right?(chosen?'Richtig · Deine Antwort':'Richtige Antwort'):'Deine Antwort · Nicht richtig'}</span>`:''}</span></button>`
+ }).join('')}</div>${submitted?`<div class="feedback ${answer.correct?'':'incorrect'}" id="feedback" tabindex="-1"><strong>${answer.correct?'Richtig.':'Nicht richtig.'}</strong><p>${q.explanation}</p></div>`:''}<div class="actions"><button class="primary" id="submit" ${!submitted&&!state.selected?'disabled':''}>${submitted?(state.index===9?'Ergebnis':'Weiter'):'Prüfen'}</button></div></div></section>`;
+ app.querySelectorAll('[data-answer]').forEach(button=>button.onclick=()=>chooseAnswer(button.dataset.answer));
+ document.getElementById('submit').onclick=submitted?nextQuestion:submitAnswer;
+ document.getElementById('exit').onclick=confirmExit;
+}
+function chooseAnswer(id){if(state.submitted||state.screen!=='quiz')return;const q=state.round[state.index];if(!q.options.some(o=>o.id===id))return;state.selected=id;
+ app.querySelectorAll('[data-answer]').forEach(b=>{const chosen=b.dataset.answer===id;b.classList.toggle('selected',chosen);b.setAttribute('aria-pressed',String(chosen))});document.getElementById('submit').disabled=false;
+}
+function submitAnswer(){if(state.screen!=='quiz'||state.submitted||!state.selected)return;const q=state.round[state.index];state.answers.push({id:q.id,selected:state.selected,correct:state.selected===q.correctId});state.submitted=true;renderQuestion();document.getElementById('feedback').focus({preventScroll:true});document.getElementById('feedback').scrollIntoView({block:'nearest',behavior:'instant'});announce(state.answers.at(-1).correct?'Richtig. Ein Punkt.':'Nicht richtig. Lies dir die Erklärung durch.')}
+function nextQuestion(){if(state.screen!=='quiz'||!state.submitted)return;if(state.index===9){state.screen='result';renderResult();focusHeading();return}state.index++;state.selected=null;state.submitted=false;renderQuestion();focusHeading()}
+const SAYINGS=[
+ ['Bro, dein Ernst?','Bodenlos.','Das war nix, Digga.'],
+ ['Da ist noch ordentlich Luft, Bro.','Knapp am Kochen vorbei.','War wohl die Aufwärmrunde.'],
+ ['Kann man machen.','Bisschen Luft nach oben, aber geht klar.','Halb gekocht, halb roh.'],
+ ['Stabil, Bro.','Du hast gekocht.','Kannst dich sehen lassen.'],
+ ['Macher.','Fast schon frech, wie gut das war.','Eine fehlt. Trotzdem abgeliefert.'],
+ ['Maschine.','Absoluter Macher.','Komplett rasiert.']
+];
+function renderResult(){const s=score(),group=s<=2?0:s<=4?1:s<=6?2:s<=8?3:s===9?4:5,phrase=shuffle(SAYINGS[group])[0];
+ const totals=TOPICS.map((_,cat)=>{const indices=state.round.map((q,i)=>q.cat===cat?i:-1).filter(i=>i!==-1);return {cat,total:indices.length,right:indices.filter(i=>state.answers[i].correct).length}});
+ const weak=totals.filter(t=>t.right<t.total).sort((a,b)=>(b.total-b.right)-(a.total-a.right)).slice(0,3);
+ app.innerHTML=`<section class="result"><div class="result-top"><div><h1 tabindex="-1" data-focus>${phrase}</h1><button class="primary" id="restart">Neue Runde</button></div><div class="score-disc" aria-label="${s} von 10 Punkten"><div class="score-num">${s}<span> / 10</span></div></div></div><div class="summary"><details class="panel"><summary>Themencheck</summary><div class="panel-content"><p class="label-small">Richtig / gestellt</p>${totals.map(t=>`<div class="topic-row"><span>${TOPICS[t.cat].name}</span><strong>${t.right} / ${t.total}</strong></div>`).join('')}</div></details>${weak.length?`<details class="panel"><summary>Übungstipps</summary><div class="panel-content">${weak.map(t=>`<div class="recommend"><strong>${TOPICS[t.cat].name}</strong><p>${recommendation(t.cat)}</p></div>`).join('')}</div></details>`:''}</div><section class="review"><h2>Lösungen</h2>${state.round.map((q,i)=>{const a=state.answers[i],own=q.options.find(o=>o.id===a.selected),right=q.options.find(o=>o.id===q.correctId);return `<details><summary><span class="badge ${a.correct?'':'no'}" aria-label="${a.correct?'Richtig':'Nicht richtig'}">${a.correct?'✓':'×'}</span><span>${i+1}. ${TOPICS[q.cat].name}</span></summary><div class="review-body"><strong>${q.prompt}</strong>${q.body}<div class="review-answer"><div><small>Deine Antwort</small>${own.html}</div><div><small>Richtige Antwort</small>${right.html}</div></div><p class="review-explain">${q.explanation}</p></div></details>`}).join('')}</section></section>`;
+ // Graph markup occurs more than once in review: renew all SVG IDs and references.
+ uniquifyGraphs();document.getElementById('restart').onclick=startRound;announce(`Runde geschafft: ${s} von 10 Punkten.`);
+}
+function recommendation(cat){const q=state.round.find((q,i)=>q.cat===cat&&!state.answers[i].correct);if(!q)return TOPICS[cat].tip;
+ if(q.meta.kind==='power-number')return q.meta.reciprocal?'Übe negative Exponenten: a⁻ⁿ bedeutet 1 / aⁿ. Das Minus gehört zum Exponenten, nicht zum Ergebnis.':'Achte auf die Klammern: (−a)² ist positiv; −a² ist die negative Zahl −(a²).';
+ if(q.meta.kind==='product-power')return 'Potenziere bei einem Produkt jeden Faktor: (ab)ⁿ = aⁿ · bⁿ. Der Zahlenfaktor gehört mit dazu.';
+ if(q.meta.kind==='term'&&q.meta.t===3)return 'Übe die erste binomische Formel: (a + b)² = a² + 2ab + b². Der mittlere Term darf nicht fehlen.';
+ if(q.meta.kind==='formula')return 'Stelle Formeln schrittweise um: zuerst den addierten Wert auf beiden Seiten abziehen, dann durch den Faktor vor x teilen.';
+ return TOPICS[cat].tip;
+}
+function uniquifyGraphs(){app.querySelectorAll('svg.graph').forEach(svg=>{const ids=new Map();svg.querySelectorAll('[id]').forEach(el=>{const old=el.id,next=old+'r'+(++graphSerial);ids.set(old,next);el.id=next});for(const el of [svg,...svg.querySelectorAll('*')])for(const attr of ['aria-labelledby','clip-path']){const v=el.getAttribute(attr);if(v){let n=v;ids.forEach((fresh,old)=>{n=n.replace(old,fresh)});el.setAttribute(attr,n)}}})}
+function confirmExit(){const overlay=document.createElement('div');overlay.className='dialog-back';overlay.innerHTML=`<section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-desc"><h2 id="dialog-title">Runde beenden?</h2><p id="dialog-desc">Deine bisherigen Antworten werden verworfen.</p><div class="dialog-buttons"><button class="quiet" id="cancel-exit">Weiterlernen</button><button class="primary" id="confirm-exit">Runde beenden</button></div></section>`;document.body.append(overlay);app.inert=true;
+ const close=()=>{app.inert=false;overlay.remove();document.getElementById('exit')?.focus()};overlay.querySelector('#cancel-exit').onclick=close;overlay.querySelector('#confirm-exit').onclick=()=>{close();renderStart();document.getElementById('start').focus();window.scrollTo(0,0)};overlay.querySelector('#cancel-exit').focus();overlay.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();close()}if(e.key==='Tab'){const b=[...overlay.querySelectorAll('button')],first=b[0],last=b.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}};
+}
+renderStart();
+</script>
+</body>
+</html>
