@@ -1,58 +1,620 @@
 <!DOCTYPE html>
 <html lang="de">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Unterrichtsmaterialien von Herrn Borberg: Mathematik und Physik, übersichtlich nach Fach und Stufe geordnet.">
-<title>Herr Borberg · Mathematik & Physik</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%23172e35%22%2F%3E%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M7%206v19h19%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%2F%3E%3Cpath%20d%3D%22M10%2021c4%200%204-11%208-11s4%208%208%203%22%20stroke%3D%22%238ee0bb%22%20stroke-width%3D%222.5%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E">
-<style>
-:root{--ink:#172e35;--muted:#52676d;--paper:#f5f7f4;--line:#dbe3de;--math:#305ed0;--physics:#18725c}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.6}a{color:inherit}button,select{font:inherit}a:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid #cc650b;outline-offset:5px}.skip{position:absolute;left:20px;top:-80px;background:white;padding:12px;z-index:5}.skip:focus{top:10px}.wrap{width:min(1120px,calc(100% - 40px));margin:auto}.topbar{display:flex;justify-content:space-between;align-items:center;padding:24px 0;border-bottom:1px solid var(--line);gap:20px}.brand{font-weight:750;text-decoration:none;letter-spacing:-.03em;font-size:1.2rem}.topbar nav{display:flex;gap:24px;font-size:.9rem}.topbar nav a{text-decoration:none}.topbar nav a:hover{text-decoration:underline}.hero{padding:65px 0 40px;max-width:780px}.eyebrow{font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;font-weight:750;color:var(--physics);margin:0 0 15px}h1{font-size:clamp(2.4rem,6vw,4.5rem);letter-spacing:-.055em;line-height:1.08;margin:0 0 24px;font-weight:750}h1 span{color:var(--physics)}.intro{font-size:1.1rem;color:var(--muted);max-width:590px}.filters{display:flex;align-items:center;flex-wrap:wrap;gap:16px;background:white;border:1px solid var(--line);padding:18px 22px;border-radius:16px;margin:12px 0 38px}.filters label{font-weight:650;font-size:.9rem}.filters select{margin-left:8px;background:var(--paper);border:1px solid var(--line);padding:8px 30px 8px 12px;border-radius:8px;color:var(--ink);max-width:100%}.count{margin-left:auto;font-size:.85rem;color:var(--muted)}.subject{--accent:var(--math);margin-bottom:48px;scroll-margin-top:20px}.subject.physics{--accent:var(--physics)}.subject-title{display:flex;align-items:center;gap:13px;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:22px}.subject-icon{display:grid;place-items:center;width:42px;height:42px;background:var(--accent);color:white;border-radius:12px;font-weight:700;font-size:1.2rem}h2{margin:0;font-size:1.55rem;letter-spacing:-.03em}.level{margin-bottom:26px}.level h3{font-size:.85rem;letter-spacing:.03em;margin:0 0 12px;color:var(--muted);font-weight:650}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card{display:flex;flex-direction:column;position:relative;text-decoration:none;background:white;border:1px solid var(--line);border-radius:14px;padding:23px;transition:transform .18s,border-color .18s,box-shadow .18s;min-height:210px}.card:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 10px 25px #172e350b}.tag{font-size:.7rem;color:var(--accent);font-weight:750;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}.card h4{font-size:1.15rem;line-height:1.3;letter-spacing:-.02em;margin:0 0 9px}.card p{font-size:.9rem;color:var(--muted);margin:0 0 22px}.open{margin-top:auto;font-size:.8rem;font-weight:650;color:var(--accent);display:flex;justify-content:space-between}.new{background:#eaf0ff;border-color:#bdccef}.badge{float:right;font-size:.65rem;background:var(--math);color:white;padding:2px 8px;border-radius:20px;letter-spacing:.02em}.note{border-top:1px solid var(--line);padding:25px 0;color:var(--muted);font-size:.9rem}.note strong{color:var(--ink)}footer{padding:20px 0 32px;color:var(--muted);font-size:.8rem}[hidden]{display:none!important}#empty{padding:24px;background:white;border-radius:12px}@media(max-width:850px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.wrap{width:calc(100% - 32px)}.topbar{align-items:flex-start;flex-direction:column;gap:12px}.hero{padding-top:40px}.grid{grid-template-columns:1fr}.card{min-height:185px}.filters{align-items:stretch;flex-direction:column;padding:16px}.filters label{display:flex;align-items:center;justify-content:space-between;gap:10px}.filters select{width:70%;margin:0}.count{margin:0}.subject{margin-bottom:32px}}@media(prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}}
-
-/* Dezente Fachsymbole und eine klare Wortmarke. */
-.brand{font-size:1.3rem;letter-spacing:-.035em}
-.subject-icon{width:48px;height:48px;flex-shrink:0;background:#e9effc;color:var(--math);border:1px solid #d8e2f7;border-radius:14px}
-.physics .subject-icon{background:#e6f2ec;color:var(--physics);border-color:#cfe5da}
-.subject-icon svg{display:block;width:30px;height:30px}
-.subject-title{gap:16px;padding-bottom:18px}
-</style>
-</head>
-<body>
-<a class="skip" href="#materialien">Direkt zu den Materialien</a>
-<div class="wrap">
-<header class="topbar"><a class="brand" href="./">Herr Borberg</a><nav aria-label="Fächer"><a href="#mathematik">Mathematik</a><a href="#physik">Physik</a></nav></header>
-<section class="hero" aria-labelledby="welcome"><p class="eyebrow">Dein digitaler Lernraum</p><h1>Verstehen. Üben.<br><span>Weiterkommen.</span></h1><p class="intro" id="welcome">Mathematik und Physik zum Entdecken: Hier findest du Übungen, Lernspiele und interaktive Materialien – geordnet nach deinem Fach und deiner Stufe.</p></section>
-<main id="materialien">
-<div class="filters" hidden id="filters"><label for="subject">Fach <select id="subject"><option value="all">Alle Fächer</option><option value="math">Mathematik</option><option value="physics">Physik</option></select></label><label for="level">Stufe <select id="level"><option value="all">Alle Stufen</option><option value="sek1">Sekundarstufe I</option><option value="ef">Einführungsphase (EF)</option></select></label><span class="count" id="count" role="status" aria-live="polite"></span></div>
-<section class="subject math" id="mathematik" data-subject="math" aria-labelledby="heading-mathematik"><div class="subject-title"><span class="subject-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v21h21M3 8l3-3 3 3M24 23l3 3-3 3"/><path d="M10 21c4 0 4-12 8-12s4 10 8 5"/></svg></span><h2 id="heading-mathematik">Mathematik</h2></div><section class="level" data-level="sek1" aria-labelledby="mathematik-sek1"><h3 id="mathematik-sek1">Sekundarstufe I</h3><div class="grid"><a class="card" href="terme.html"><div class="tag">Algebra</div><h4>Terme und Variablen</h4><p>Terme aufstellen, vereinfachen und spielerisch üben.</p><span class="open">Material öffnen <span aria-hidden="true">↗</span></span></a><a class="card" href="gleichungen.html"><div class="tag">Algebra</div><h4>Gleichungen</h4><p>Gleichungen lösen und mathematische Ausdrücke sicher umformen.</p><span class="open">Material öffnen <span aria-hidden="true">↗</span></span></a><a class="card" href="additionsverfahren.html"><div class="tag">Algebra</div><h4>Additionsverfahren</h4><p>Lineare Gleichungssysteme Schritt für Schritt lösen.</p><span class="open">Material öffnen <span aria-hidden="true">↗</span></span></a><a class="card" href="Kegeloberflaeche-mit-Pythagoras.html"><div class="tag">Geometrie</div><h4>Kegeloberfläche</h4><p>Die Oberfläche eines Kegels mit dem Satz des Pythagoras berechnen.</p><span class="open">Material öffnen <span aria-hidden="true">↗</span></span></a></div></section><section class="level" data-level="ef" aria-labelledby="mathematik-ef"><h3 id="mathematik-ef">Einführungsphase (EF)</h3><div class="grid"><a class="card" href="mathe-basics-ef.html"><div class="tag">Grundlagen</div><h4>Wiederholungsaufgaben EF</h4><p>Die mathematischen Grundlagen für die Oberstufe auffrischen.</p><span class="open">Material öffnen <span aria-hidden="true">↗</span></span></a><a class="card" href="potenzfunktionen.html"><div class="tag">Funktionen</div><h4>Potenzfunktionen</h4><p>Potenzfunktionen erkunden und ihre Eigenschaften entdecken.</p><span class="open">Material öffnen <span aria-hidden="true">↗</span></span></a><a class="card new" href="graphen_treffen.html"><div class="tag">Funktionen<span class="badge">Neu</span></div><h4>Graphen verschieben</h4><p>Verschiebungen von Funktionsgraphen erkunden und verstehen.</p><span class="open">Material öffnen <span aria-hidden="true">↗</span></span></a></div></section></section><section class="subject physics" id="physik" data-subject="physics" aria-labelledby="heading-physik"><div class="subject-title"><span class="subject-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="16" cy="16" rx="13" ry="5"/><ellipse cx="16" cy="16" rx="13" ry="5" transform="rotate(60 16 16)"/><ellipse cx="16" cy="16" rx="13" ry="5" transform="rotate(120 16 16)"/><circle cx="16" cy="16" r="2.2" fill="currentColor" stroke="none"/></svg></span><h2 id="heading-physik">Physik</h2></div><section class="level" data-level="sek1" aria-labelledby="physik-sek1"><h3 id="physik-sek1">Sekundarstufe I</h3><div class="grid"><a class="card" href="hebelgesetz.html"><div class="tag">Mechanik</div><h4>Hebelgesetz</h4><p>Mit interaktiven Aufgaben das Hebelgesetz verstehen und wiederholen.</p><span class="open">Material öffnen <span aria-hidden="true">↗</span></span></a><a class="card" href="flaschenzug.html"><div class="tag">Mechanik</div><h4>Flaschenzüge</h4><p>Feste und lose Rollen entdecken und die Kraftersparnis verstehen.</p><span class="open">Material öffnen <span aria-hidden="true">↗</span></span></a><a class="card" href="gravitation.html"><div class="tag">Astronomie</div><h4>Gravitation</h4><p>Mit Aufgaben und Visualisierungen Gravitation und Astronomie erkunden.</p><span class="open">Material öffnen <span aria-hidden="true">↗</span></span></a></div></section></section><p id="empty" hidden>Für diese Auswahl sind noch keine Materialien vorhanden. Wähle ein anderes Fach oder eine andere Stufe.</p>
-<aside class="note"><strong>So geht’s:</strong> Wähle dein Thema und starte direkt mit den Materialien, Übungen oder Lernspielen.</aside></main>
-<footer>© 2026 Herr Borberg · Unterrichtsmaterialien für Mathematik und Physik</footer></div>
-<script>
-const subjectFilter = document.getElementById('subject');
-const levelFilter = document.getElementById('level');
-function filterMaterials() {
- let count = 0;
- document.querySelectorAll('.subject').forEach(subject => {
-  const matchesSubject = subjectFilter.value === 'all' || subject.dataset.subject === subjectFilter.value;
-  let visibleLevels = 0;
-  subject.querySelectorAll('.level').forEach(level => {
-   const visible = matchesSubject && (levelFilter.value === 'all' || level.dataset.level === levelFilter.value);
-   level.hidden = !visible;
-   if (visible) { visibleLevels++; count += level.querySelectorAll('.card').length; }
-  });
-  subject.hidden = visibleLevels === 0;
- });
- document.getElementById('count').textContent = count + (count === 1 ? ' Material' : ' Materialien');
- document.getElementById('empty').hidden = count !== 0;
-}
-subjectFilter.addEventListener('change', filterMaterials);
-levelFilter.addEventListener('change', filterMaterials);
-document.querySelectorAll('nav a').forEach(link => link.addEventListener('click', () => {
- subjectFilter.value = link.hash === '#mathematik' ? 'math' : 'physics';
- levelFilter.value = 'all';
- filterMaterials();
-}));
-document.getElementById('filters').hidden = false;
-filterMaterials();
-</script>
-</body></html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Unterrichtsmaterialien von Herrn Borberg: Mathematik und Physik, übersichtlich nach Fach und Stufe geordnet.">
+    <title>
+      Herr Borberg · Mathematik & Physik
+    </title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%23172e35%22%2F%3E%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M7%206v19h19%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%2F%3E%3Cpath%20d%3D%22M10%2021c4%200%204-11%208-11s4%208%208%203%22%20stroke%3D%22%238ee0bb%22%20stroke-width%3D%222.5%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E">
+    <style>
+    :root {
+      --ink:#172e35;
+      --muted:#52676d;
+      --paper:#f5f7f4;
+      --line:#dbe3de;
+      --math:#305ed0;
+      --physics:#18725c;
+    }
+    * {
+      box-sizing:border-box;
+    }
+    body {
+      margin:0;
+      background:var(--paper);
+      color:var(--ink);
+      font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+      line-height:1.6;
+    }
+    a {
+      color:inherit;
+    }
+    button,select {
+      font:inherit;
+    }
+    a:focus-visible,button:focus-visible,select:focus-visible {
+      outline:3px solid #cc650b;
+      outline-offset:5px;
+    }
+    .skip {
+      position:absolute;
+      left:20px;
+      top:-80px;
+      background:white;
+      padding:12px;
+      z-index:5;
+    }
+    .skip:focus {
+      top:10px;
+    }
+    .wrap {
+      width:min(1120px,calc(100% - 40px));
+      margin:auto;
+    }
+    .topbar {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:24px 0;
+      border-bottom:1px solid var(--line);
+      gap:20px;
+    }
+    .brand {
+      font-weight:750;
+      text-decoration:none;
+      letter-spacing:-.03em;
+      font-size:1.2rem;
+    }
+    .topbar nav {
+      display:flex;
+      gap:24px;
+      font-size:.9rem;
+    }
+    .topbar nav a {
+      text-decoration:none;
+    }
+    .topbar nav a:hover {
+      text-decoration:underline;
+    }
+    .hero {
+      padding:65px 0 40px;
+      max-width:780px;
+    }
+    .eyebrow {
+      font-size:.75rem;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      font-weight:750;
+      color:var(--physics);
+      margin:0 0 15px;
+    }
+    h1 {
+      font-size:clamp(2.4rem,6vw,4.5rem);
+      letter-spacing:-.055em;
+      line-height:1.08;
+      margin:0 0 24px;
+      font-weight:750;
+    }
+    h1 span {
+      color:var(--physics);
+    }
+    .intro {
+      font-size:1.1rem;
+      color:var(--muted);
+      max-width:590px;
+    }
+    .filters {
+      display:flex;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:16px;
+      background:white;
+      border:1px solid var(--line);
+      padding:18px 22px;
+      border-radius:16px;
+      margin:12px 0 38px;
+    }
+    .filters label {
+      font-weight:650;
+      font-size:.9rem;
+    }
+    .filters select {
+      margin-left:8px;
+      background:var(--paper);
+      border:1px solid var(--line);
+      padding:8px 30px 8px 12px;
+      border-radius:8px;
+      color:var(--ink);
+      max-width:100%;
+    }
+    .count {
+      margin-left:auto;
+      font-size:.85rem;
+      color:var(--muted);
+    }
+    .subject {
+      --accent:var(--math);
+      margin-bottom:48px;
+      scroll-margin-top:20px;
+    }
+    .subject.physics {
+      --accent:var(--physics);
+    }
+    .subject-title {
+      display:flex;
+      align-items:center;
+      gap:13px;
+      border-bottom:1px solid var(--line);
+      padding-bottom:14px;
+      margin-bottom:22px;
+    }
+    .subject-icon {
+      display:grid;
+      place-items:center;
+      width:42px;
+      height:42px;
+      background:var(--accent);
+      color:white;
+      border-radius:12px;
+      font-weight:700;
+      font-size:1.2rem;
+    }
+    h2 {
+      margin:0;
+      font-size:1.55rem;
+      letter-spacing:-.03em;
+    }
+    .level {
+      margin-bottom:26px;
+    }
+    .level h3 {
+      font-size:.85rem;
+      letter-spacing:.03em;
+      margin:0 0 12px;
+      color:var(--muted);
+      font-weight:650;
+    }
+    .grid {
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:16px;
+    }
+    .card {
+      display:flex;
+      flex-direction:column;
+      position:relative;
+      text-decoration:none;
+      background:white;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:23px;
+      transition:transform .18s,border-color .18s,box-shadow .18s;
+      min-height:210px;
+    }
+    .card:hover {
+      transform:translateY(-3px);
+      border-color:var(--accent);
+      box-shadow:0 10px 25px #172e350b;
+    }
+    .tag {
+      font-size:.7rem;
+      color:var(--accent);
+      font-weight:750;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:14px;
+    }
+    .card h4 {
+      font-size:1.15rem;
+      line-height:1.3;
+      letter-spacing:-.02em;
+      margin:0 0 9px;
+    }
+    .card p {
+      font-size:.9rem;
+      color:var(--muted);
+      margin:0 0 22px;
+    }
+    .open {
+      margin-top:auto;
+      font-size:.8rem;
+      font-weight:650;
+      color:var(--accent);
+      display:flex;
+      justify-content:space-between;
+    }
+    .new {
+      background:#eaf0ff;
+      border-color:#bdccef;
+    }
+    .badge {
+      float:right;
+      font-size:.65rem;
+      background:var(--math);
+      color:white;
+      padding:2px 8px;
+      border-radius:20px;
+      letter-spacing:.02em;
+    }
+    .note {
+      border-top:1px solid var(--line);
+      padding:25px 0;
+      color:var(--muted);
+      font-size:.9rem;
+    }
+    .note strong {
+      color:var(--ink);
+    }
+    footer {
+      padding:20px 0 32px;
+      color:var(--muted);
+      font-size:.8rem;
+    }
+    [hidden] {
+      display:none!important;
+    }
+    #empty {
+      padding:24px;
+      background:white;
+      border-radius:12px;
+    }
+    @media(max-width:850px) {
+      .grid {
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+    }
+    @media(max-width:560px) {
+      .wrap {
+        width:calc(100% - 32px);
+      }
+      .topbar {
+        align-items:flex-start;
+        flex-direction:column;
+        gap:12px;
+      }
+      .hero {
+        padding-top:40px;
+      }
+      .grid {
+        grid-template-columns:1fr;
+      }
+      .card {
+        min-height:185px;
+      }
+      .filters {
+        align-items:stretch;
+        flex-direction:column;
+        padding:16px;
+      }
+      .filters label {
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+      }
+      .filters select {
+        width:70%;
+        margin:0;
+      }
+      .count {
+        margin:0;
+      }
+      .subject {
+        margin-bottom:32px;
+      }
+    }
+    @media(prefers-reduced-motion:reduce) {
+      .card {
+        transition:none;
+      }
+      .card:hover {
+        transform:none;
+      }
+    }
+    /* Dezente Fachsymbole und eine klare Wortmarke. */
+    .brand {
+      font-size:1.3rem;
+      letter-spacing:-.035em;
+    }
+    .subject-icon {
+      width:48px;
+      height:48px;
+      flex-shrink:0;
+      background:#e9effc;
+      color:var(--math);
+      border:1px solid #d8e2f7;
+      border-radius:14px;
+    }
+    .physics .subject-icon {
+      background:#e6f2ec;
+      color:var(--physics);
+      border-color:#cfe5da;
+    }
+    .subject-icon svg {
+      display:block;
+      width:30px;
+      height:30px;
+    }
+    .subject-title {
+      gap:16px;
+      padding-bottom:18px;
+    }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#materialien">Direkt zu den Materialien</a>
+    <div class="wrap">
+      <header class="topbar">
+        <a class="brand" href="./">Herr Borberg</a>
+        <nav aria-label="Fächer">
+          <a href="#mathematik">Mathematik</a>
+          <a href="#physik">Physik</a>
+        </nav>
+      </header>
+      <section class="hero" aria-labelledby="welcome">
+        <p class="eyebrow">Dein digitaler Lernraum</p>
+        <h1>
+          Verstehen. Üben.
+          <br>
+          <span>
+            Weiterkommen.
+          </span>
+        </h1>
+        <p class="intro" id="welcome">Mathematik und Physik zum Entdecken: Hier findest du Übungen, Lernspiele und interaktive Materialien – geordnet nach deinem Fach und deiner Stufe.</p>
+      </section>
+      <main id="materialien">
+        <!--
+        MATERIAL HINZUFÜGEN
+        1. Suche den gewünschten Fachbereich und die passende Stufe weiter unten.
+        2. Kopiere dort einen vollständigen Kartenblock von <a class="card" ...> bis </a>
+           in den zugehörigen <div class="grid">-Bereich.
+        3. Ändere href (Dateiname einschließlich Groß-/Kleinschreibung), Kategorie,
+           Überschrift und Beschreibung. Die Materialanzahl aktualisiert sich automatisch.
+        4. Lade die neue HTML-Datei in denselben Ordner wie diese index.html hoch.
+        
+        KOPIERVORLAGE (innerhalb eines grid-Bereichs einsetzen, ohne Kommentarzeichen):
+        <a class="card" href="Dateiname.html">
+          <div class="tag">Kategorie</div>
+          <h4>Titel des Materials</h4>
+          <p>Kurze Beschreibung des Materials.</p>
+          <span class="open">Material öffnen <span aria-hidden="true">↗</span></span>
+        </a>
+        -->
+        <div class="filters" hidden id="filters">
+          <label for="subject">
+            Fach
+            <select id="subject">
+              <option value="all">Alle Fächer</option>
+              <option value="math">Mathematik</option>
+              <option value="physics">Physik</option>
+            </select>
+          </label>
+          <label for="level">
+            Stufe
+            <select id="level">
+              <option value="all">Alle Stufen</option>
+              <option value="sek1">Sekundarstufe I</option>
+              <option value="ef">Einführungsphase (EF)</option>
+              <option value="sek2">Oberstufe</option>
+            </select>
+          </label>
+          <span class="count" id="count" role="status" aria-live="polite">
+          </span>
+        </div>
+        <!-- MATHEMATIK: Materialien nach Stufen -->
+        <section class="subject math" id="mathematik" data-subject="math" aria-labelledby="heading-mathematik">
+          <div class="subject-title">
+            <span class="subject-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 5v21h21M3 8l3-3 3 3M24 23l3 3-3 3"/>
+                <path d="M10 21c4 0 4-12 8-12s4 10 8 5"/>
+              </svg>
+            </span>
+            <h2 id="heading-mathematik">Mathematik</h2>
+          </div>
+          <section class="level" data-level="sek1" aria-labelledby="mathematik-sek1">
+            <h3 id="mathematik-sek1">Sekundarstufe I</h3>
+            <div class="grid">
+              <a class="card" href="terme.html">
+                <div class="tag">Algebra</div>
+                <h4>Terme und Variablen</h4>
+                <p>Terme aufstellen, vereinfachen und spielerisch üben.</p>
+                <span class="open">
+                  Material öffnen
+                  <span aria-hidden="true">
+                    ↗
+                  </span>
+                </span>
+              </a>
+              <a class="card" href="gleichungen.html">
+                <div class="tag">Algebra</div>
+                <h4>Gleichungen</h4>
+                <p>Gleichungen lösen und mathematische Ausdrücke sicher umformen.</p>
+                <span class="open">
+                  Material öffnen
+                  <span aria-hidden="true">
+                    ↗
+                  </span>
+                </span>
+              </a>
+              <a class="card" href="additionsverfahren.html">
+                <div class="tag">Algebra</div>
+                <h4>Additionsverfahren</h4>
+                <p>Lineare Gleichungssysteme Schritt für Schritt lösen.</p>
+                <span class="open">
+                  Material öffnen
+                  <span aria-hidden="true">
+                    ↗
+                  </span>
+                </span>
+              </a>
+              <a class="card" href="Kegeloberflaeche-mit-Pythagoras.html">
+                <div class="tag">Geometrie</div>
+                <h4>Kegeloberfläche</h4>
+                <p>Die Oberfläche eines Kegels mit dem Satz des Pythagoras berechnen.</p>
+                <span class="open">
+                  Material öffnen
+                  <span aria-hidden="true">
+                    ↗
+                  </span>
+                </span>
+              </a>
+            </div>
+          </section>
+          <section class="level" data-level="ef" aria-labelledby="mathematik-ef">
+            <h3 id="mathematik-ef">Einführungsphase (EF)</h3>
+            <div class="grid">
+              <a class="card" href="mathe-basics-ef.html">
+                <div class="tag">Grundlagen</div>
+                <h4>Wiederholungsaufgaben EF</h4>
+                <p>Die mathematischen Grundlagen für die Oberstufe auffrischen.</p>
+                <span class="open">
+                  Material öffnen
+                  <span aria-hidden="true">
+                    ↗
+                  </span>
+                </span>
+              </a>
+              <a class="card" href="potenzfunktionen.html">
+                <div class="tag">Funktionen</div>
+                <h4>Potenzfunktionen</h4>
+                <p>Potenzfunktionen erkunden und ihre Eigenschaften entdecken.</p>
+                <span class="open">
+                  Material öffnen
+                  <span aria-hidden="true">
+                    ↗
+                  </span>
+                </span>
+              </a>
+              <a class="card new" href="graphen_treffen.html">
+                <div class="tag">
+                  Funktionen
+                  <span class="badge">
+                    Neu
+                  </span>
+                </div>
+                <h4>Graphen verschieben</h4>
+                <p>Verschiebungen von Funktionsgraphen erkunden und verstehen.</p>
+                <span class="open">
+                  Material öffnen
+                  <span aria-hidden="true">
+                    ↗
+                  </span>
+                </span>
+              </a>
+            </div>
+          </section>
+        </section>
+        <!-- PHYSIK: Materialien nach Stufen -->
+        <section class="subject physics" id="physik" data-subject="physics" aria-labelledby="heading-physik">
+          <div class="subject-title">
+            <span class="subject-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
+                <ellipse cx="16" cy="16" rx="13" ry="5"/>
+                <ellipse cx="16" cy="16" rx="13" ry="5" transform="rotate(60 16 16)"/>
+                <ellipse cx="16" cy="16" rx="13" ry="5" transform="rotate(120 16 16)"/>
+                <circle cx="16" cy="16" r="2.2" fill="currentColor" stroke="none"/>
+              </svg>
+            </span>
+            <h2 id="heading-physik">Physik</h2>
+          </div>
+          <section class="level" data-level="sek1" aria-labelledby="physik-sek1">
+            <h3 id="physik-sek1">Sekundarstufe I</h3>
+            <div class="grid">
+              <a class="card" href="hebelgesetz.html">
+                <div class="tag">Mechanik</div>
+                <h4>Hebelgesetz</h4>
+                <p>Mit interaktiven Aufgaben das Hebelgesetz verstehen und wiederholen.</p>
+                <span class="open">
+                  Material öffnen
+                  <span aria-hidden="true">
+                    ↗
+                  </span>
+                </span>
+              </a>
+              <a class="card" href="flaschenzug.html">
+                <div class="tag">Mechanik</div>
+                <h4>Flaschenzüge</h4>
+                <p>Feste und lose Rollen entdecken und die Kraftersparnis verstehen.</p>
+                <span class="open">
+                  Material öffnen
+                  <span aria-hidden="true">
+                    ↗
+                  </span>
+                </span>
+              </a>
+              <a class="card" href="gravitation.html">
+                <div class="tag">Astronomie</div>
+                <h4>Gravitation</h4>
+                <p>Mit Aufgaben und Visualisierungen Gravitation und Astronomie erkunden.</p>
+                <span class="open">
+                  Material öffnen
+                  <span aria-hidden="true">
+                    ↗
+                  </span>
+                </span>
+              </a>
+            </div>
+          </section>
+          <!-- PHYSIK · OBERSTUFE -->
+          <section class="level" data-level="sek2" aria-labelledby="physik-sek2">
+            <h3 id="physik-sek2">Oberstufe</h3>
+            <div class="grid">
+              <!-- Material: Huygensches Prinzip -->
+              <a class="card" href="Huygens_Elementarwellen.html">
+                <div class="tag">Mechanische Wellen</div>
+                <h4>Huygensches Prinzip</h4>
+                <p>Elementarwellen entdecken und die Ausbreitung mechanischer Wellen verstehen.</p>
+                <span class="open">
+                  Material öffnen
+                  <span aria-hidden="true">
+                    ↗
+                  </span>
+                </span>
+              </a>
+            </div>
+          </section>
+        </section>
+        <p id="empty" hidden>Für diese Auswahl sind noch keine Materialien vorhanden. Wähle ein anderes Fach oder eine andere Stufe.</p>
+        <aside class="note">
+          <strong>
+            So geht’s:
+          </strong>
+          Wähle dein Thema und starte direkt mit den Materialien, Übungen oder Lernspielen.
+        </aside>
+      </main>
+      <footer>
+        © 2026 Herr Borberg · Unterrichtsmaterialien für Mathematik und Physik
+      </footer>
+    </div>
+    <script>
+    const subjectFilter = document.getElementById('subject');
+    const levelFilter = document.getElementById('level');
+    function filterMaterials() {
+     let count = 0;
+     document.querySelectorAll('.subject').forEach(subject => {
+      const matchesSubject = subjectFilter.value === 'all' || subject.dataset.subject === subjectFilter.value;
+      let visibleLevels = 0;
+      subject.querySelectorAll('.level').forEach(level => {
+       const visible = matchesSubject && (levelFilter.value === 'all' || level.dataset.level === levelFilter.value);
+       level.hidden = !visible;
+       if (visible) { visibleLevels++; count += level.querySelectorAll('.card').length; }
+      });
+      subject.hidden = visibleLevels === 0;
+     });
+     document.getElementById('count').textContent = count + (count === 1 ? ' Material' : ' Materialien');
+     document.getElementById('empty').hidden = count !== 0;
+    }
+    subjectFilter.addEventListener('change', filterMaterials);
+    levelFilter.addEventListener('change', filterMaterials);
+    document.querySelectorAll('nav a').forEach(link => link.addEventListener('click', () => {
+     subjectFilter.value = link.hash === '#mathematik' ? 'math' : 'physics';
+     levelFilter.value = 'all';
+     filterMaterials();
+    }));
+    document.getElementById('filters').hidden = false;
+    filterMaterials();
+    </script>
+  </body>
+</html>
