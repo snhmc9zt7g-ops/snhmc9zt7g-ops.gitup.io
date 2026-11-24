@@ -1,0 +1,58 @@
+<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sekante und Tangente</title>
+<style>*{box-sizing:border-box}body{font:18px/1.45 Inter,Arial,sans-serif;color:#173842;background:#f5f8f7;margin:0}main{max-width:940px;margin:auto;padding:20px}button,select{font:inherit;padding:8px 14px;border:1px solid #829d9e;border-radius:6px;background:white;color:inherit;cursor:pointer}button[aria-pressed=true]{background:#075c65;color:white}nav,section{display:flex;gap:12px;align-items:center;flex-wrap:wrap}h1{font-size:clamp(25px,4vw,40px);margin:22px 0 3px}p{margin:6px 0 14px}svg{width:100%;max-height:48vh;background:white;border:1px solid #d2dfe0;margin:12px 0}output{display:block;font-weight:bold;font-size:1.15em}svg text{font:16px Arial;paint-order:stroke;stroke:white;stroke-width:3px}svg{touch-action:none}svg text{pointer-events:none}[data-drag]{cursor:grab}input[type=range]{width:105px;vertical-align:middle}</style>
+<main><nav><button id="first">1 · Sekante und Tangente</button><button id="second">2 · Steigungsdreieck</button></nav><h1 id="title"></h1><p id="task"></p><section><label id="models">Graph <select id="model"><option value="curve">Vergleichskurve · f(x) = 2(x − 2)²</option><option value="car" selected>Auto · s(t) = t²</option></select></label><label>P <input id="pval" type="range" min="0" step=".01" aria-label="Position von P"></label><label id="qwrap">Q <input id="qval" type="range" min="0" step=".01" aria-label="Position von Q"></label><label id="label" for="value"></label><select id="value"></select><button id="show"></button></section><svg id="plot" viewBox="0 0 720 400" role="img" aria-label="Koordinatensystem mit Graph und markierten Punkten"></svg><output id="reading" aria-live="polite"></output><p id="key"></p></main>
+<script>
+const el=id=>document.getElementById(id),fmt=x=>Number(x.toFixed(6)).toLocaleString('de-DE',{maximumFractionDigits:6});let mode=1,reveal=false;
+const plot=el('plot');
+let p=1,q=5,drag=null,toScreenX;
+function setup(n){
+ mode=n;
+ const first=n===1,car=first&&el('model').value==='car';
+ p=first?(car?10:1):3;q=car?10.1:5;reveal=first&&!car;
+ el('models').hidden=!first;el('qwrap').hidden=!first;
+ el('first').setAttribute('aria-pressed',first);el('second').setAttribute('aria-pressed',!first);
+ el('title').textContent=first?(car?'Momentangeschwindigkeit des Autos':'Wie unterscheiden sich Sekante und Tangente?'):'Wie ändert sich die Steigung in P?';
+ el('task').textContent=car?'Lass P bei 10 s. Vermute zuerst, wie sich die Steigung bei Q links von P verändert. Wähle dann 9,9 s.':first?'Ziehe P und Q auf dem Graphen. Halte dann P fest und führe Q von beiden Seiten an P heran.':'Zeichne zuerst auf dem Blatt. Blende dann die Tangente ein und verändere die Breite des Dreiecks. Wie ändert sich die Steigung, wenn du anschließend P über den Scheitel ziehst?';
+ el('pval').max=first?(car?12:5):4;el('qval').max=car?12:5;
+ el('label').textContent=first?'Q direkt wählen':'Breite Δx';
+ const values=first?(car?[8,9,9.9,9.99,10.01,10.1,11,12]:[0,1,2,3,4,5]):[0.5,1,1.5];
+ el('value').replaceChildren(...values.map(x=>new Option(fmt(x),x)));el('value').value=first?q:1;draw()
+}
+function draw(){
+ const a=mode===1,car=a&&el('model').value==='car',v=a?q:Number(el('value').value);
+ const f=car?x=>x*x:a?x=>2*(x-2)**2:x=>3-(x-2)**2;
+ const y=f(p),m=car?2*p:a?4*(p-2):-2*(p-2);
+ const lo=0,hi=car?12:a?5:5.5,min=car?0:a?-2:Math.min(-2,Math.floor(y+m*v)),max=car?150:a?20:Math.max(4,Math.ceil(y+m*v));
+ const X=x=>65+610*x/hi,Y=z=>345-300*(z-min)/(max-min);
+ toScreenX=x=>(x-65)*hi/610;
+ el('pval').value=p;el('qval').value=q;
+let svg='';function line(x,y,b,c,color,width=1,dash=''){svg+='<line x1="'+X(x)+'" y1="'+Y(y)+'" x2="'+X(b)+'" y2="'+Y(c)+'" stroke="'+color+'" stroke-width="'+width+'" stroke-dasharray="'+dash+'"/>'}
+function label(x,y,s,dx=0,dy=0){svg+='<text x="'+(X(x)+dx)+'" y="'+(Y(y)+dy)+'">'+s+'</text>'}
+function dot(x,y,s,color,dx,dy){svg+='<circle cx="'+X(x)+'" cy="'+Y(y)+'" r="5" fill="'+color+'"/>';label(x,y,s,dx,dy);if(s!=='R')svg+='<circle data-drag="'+s+'" cx="'+X(x)+'" cy="'+Y(y)+'" r="15" fill="transparent"/>'}
+for(let x=lo;x<=hi;x+=car?2:1){line(x,min,x,max,'#d8e3e4');label(x,min,x,-4,18)}
+for(let z=min;z<=max;z+=car?25:a?2:1){line(lo,z,hi,z,'#d8e3e4');label(lo,z,z,-38,5)}
+line(lo,0,hi,0,'#52666a');line(0,min,0,max,'#52666a');label(hi,min,car?'t (s)':'x',-10,40);label(lo,max,car?'s (m)':'y',0,-12);
+svg+='<defs><clipPath id="bounds"><rect x="'+X(lo)+'" y="'+Y(max)+'" width="'+(X(hi)-X(lo))+'" height="'+(Y(min)-Y(max))+'"/></clipPath></defs><g clip-path="url(#bounds)">';
+for(let i=0;i<160;i++){let x=hi*i/160,b=hi*(i+1)/160;line(x,f(x),b,f(b),'#007983',3)}
+if(a&&v!==p){let k=(f(v)-y)/(v-p);line(lo,y+k*(lo-p),hi,y+k*(hi-p),'#b95a00',3,'8 4')}
+if(reveal){line(lo,y+m*(lo-p),hi,y+m*(hi-p),'#733f8d',3);if(!a){line(p,y,p+v,y,'#733f8d',2,'5 3');line(p+v,y,p+v,y+m*v,'#733f8d',2,'5 3')}}
+svg+='</g>';dot(p,y,'P','#173842',-24,-10);if(a)dot(v,f(v),'Q','#b95a00',8,-10);if(!a&&reveal)dot(p+v,y+m*v,'R','#733f8d',8,2);
+el('plot').innerHTML=svg;el('show').textContent=(a?'Tangente':'Tangente und Dreieck')+(reveal?' ausblenden':' einblenden');
+const rate=car?' m/s':'';
+const coords=(name,x,z)=>name+'('+fmt(x)+' | '+fmt(z)+')';
+el('reading').textContent=a?coords('P',p,y)+'    '+coords('Q',q,f(q))+'    ·    '+(q===p?'P und Q fallen zusammen. Der Quotient 0/0 ist undefiniert.':'Sekantensteigung '+fmt((f(q)-y)/(q-p))+rate)+(reveal?'    ·    Tangentensteigung '+fmt(m)+rate:''):coords('P',p,y)+(reveal?'    ·    '+coords('R',p+v,y+m*v)+'    ·    Δy / Δx = '+fmt(m*v)+' / '+fmt(v)+' = '+fmt(m):'');
+el('key').textContent='Türkis: Graph'+(a?'    ·    Orange gestrichelt: Sekante':'')+(reveal?'    ·    Violett: Tangente in P':'');
+}
+function move(point,x){
+ const control=el(point==='P'?'pval':'qval');
+ const value=Math.round(100*Math.max(0,Math.min(Number(control.max),x)))/100;
+ if(point==='P')p=value;else{q=value;el('value').value=String(q)}
+ draw()
+}
+plot.onpointerdown=e=>{let point=e.target.dataset.drag;if(!point)return;drag=point;plot.setPointerCapture(e.pointerId);e.preventDefault()};
+plot.onpointermove=e=>{if(!drag)return;let xy=new DOMPoint(e.clientX,e.clientY).matrixTransform(plot.getScreenCTM().inverse());move(drag,toScreenX(xy.x))};
+plot.onlostpointercapture=()=>drag=null;plot.onpointerup=plot.onpointercancel=()=>drag=null;
+el('pval').oninput=e=>move('P',Number(e.target.value));el('qval').oninput=e=>move('Q',Number(e.target.value));
+el('first').onclick=()=>setup(1);el('second').onclick=()=>setup(2);el('model').onchange=()=>setup(1);
+el('value').onchange=e=>{if(mode===1)q=Number(e.target.value);draw()};el('show').onclick=()=>{reveal=!reveal;draw()};setup(1);
+</script></html>
